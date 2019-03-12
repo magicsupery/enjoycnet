@@ -1,5 +1,5 @@
 #include "endpoint.h"
-#include "../error.h"
+#include "error.h"
 #include <boost/regex.hpp>
 #include <arpa/inet.h>
 #include <stdlib.h>
