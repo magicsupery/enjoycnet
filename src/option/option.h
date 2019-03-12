@@ -5,7 +5,6 @@ namespace enjoyc
 {
 	namespace net
 	{
-			
 		class OptionParser
 		{
 		};
@@ -55,5 +54,7 @@ namespace enjoyc
 				OptionNet net_;
 				OptionSessionDefineData define_data_;
 		};
+
+		using OptionPtr = std::shared_ptr<Option>;
 	}
 }

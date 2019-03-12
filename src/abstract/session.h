@@ -10,14 +10,20 @@ namespace enjoyc
 		class SessionBase
 		{
 			public:
+				virtual void start() = 0;
 				virtual void send(Buffer&& buf) = 0;
 				virtual void shutdown() = 0;
-				virtual Endpoint LocalAddr() = 0;
-				virtual Endpoint RemoteAddr() = 0;
+				virtual Endpoint local_addr() = 0;
+				virtual Endpoint remote_addr() = 0;
 		};
 
 		class FakeSession: public SessionBase
 		{
+			virtual void start() override
+			{
+
+			}
+
 			virtual void send(Buffer&& buf) override
 			{
 				return;
@@ -26,11 +32,11 @@ namespace enjoyc
 			{
 				return;
 			}
-			virtual Endpoint LocalAddr() override
+			virtual Endpoint local_addr() override
 			{
 				return Endpoint();
 			}
-			virtual Endpoint RemoteAddr() override
+			virtual Endpoint remote_addr() override
 			{
 				return Endpoint();
 			}
