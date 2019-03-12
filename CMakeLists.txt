@@ -51,6 +51,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/abstract SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/net SRC_LIST)
 add_executable(${projectName} ${SRC_LIST})
 
 # add link libs

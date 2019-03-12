@@ -23,8 +23,8 @@ namespace enjoyc
 				int protocol() const;
 				int family() const {return family_;}
 
-				virtual std::shared_ptr<ServerBase> CreateServer() { return std::shared_ptr<ServerBase>(); };
-				virtual std::shared_ptr<ClientBase> CreateClient() { return std::shared_ptr<ClientBase>(); };
+				virtual std::shared_ptr<ServerBase> create_server_impl() { return std::shared_ptr<ServerBase>(); };
+				virtual std::shared_ptr<ClientBase> create_client_impl() { return std::shared_ptr<ClientBase>(); };
 			protected:
 				explicit Proto(int family, ProtoType proto_type = ProtoType::tcp)
 					:family_(family),
