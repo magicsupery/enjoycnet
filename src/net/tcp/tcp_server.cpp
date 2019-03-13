@@ -52,6 +52,7 @@ namespace enjoyc
 
 		void TcpServer::go_accept()
 		{
+			std::vector<std::shared_ptr<TcpSession>> sessions;
 			for(;;)
 			{
 				DLOG(INFO) << __FUNCTION__ ;
@@ -61,6 +62,7 @@ namespace enjoyc
 				
 				auto tcp_session_ptr = std::make_shared<TcpSession>(socket_ptr, option_ptr_, local_addr_);
 				tcp_session_ptr->start();
+				sessions.emplace_back(tcp_session_ptr);
 			}
 		}
 

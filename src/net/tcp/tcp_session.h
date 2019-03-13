@@ -13,6 +13,7 @@ namespace enjoyc
 		using BufferPtr = std::shared_ptr<Buffer>;
 		using MsgChan = co_chan<BufferPtr>;
 		using OptionSessionPtr = std::unique_ptr<OptionSessionDefine>;
+
 		class TcpSession
 			:public std::enable_shared_from_this<TcpSession>,
 			 public SessionBase
@@ -21,6 +22,7 @@ namespace enjoyc
 				explicit TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr,
 						Endpoint const& local_addr);
 
+				~TcpSession();
 			public:
 				virtual void start() override;
 				virtual void send(Buffer&& buf) override;
@@ -31,6 +33,9 @@ namespace enjoyc
 			private:
 				void go_send();
 				void go_receive();
+
+				void on_close_send();
+				void on_close_receive();
 			private:
 				TcpSocketPtr socket_ptr_;
 				
@@ -41,9 +46,10 @@ namespace enjoyc
 
 				co::atomic_t<bool> send_flag_;
 				co::atomic_t<bool> receive_flag_;
+				co::atomic_t<bool> closed_flag_;
 
 				MsgChan  msg_chan_;
-				
+				int max_read_buf_num_;
 		};
 			
 		using tcp_io_service = boost::asio::io_service;
