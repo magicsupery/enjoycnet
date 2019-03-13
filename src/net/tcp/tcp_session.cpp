@@ -1,0 +1,79 @@
+#include "tcp_session.h"
+#include <glog/logging.h>
+
+
+namespace enjoyc
+{
+	namespace net
+	{
+
+		TcpSession::TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr, 
+				Endpoint const& local_addr, Endpoint const& remote_addr)
+			:socket_ptr_(tcp_socket_ptr),
+			 local_addr_(local_addr),
+			 remote_addr_(remote_addr),
+			 option_session_ptr_(std::unique_ptr<
+					 OptionSessionDefine>(new OptionSessionDefine(option_ptr->define_data_)))
+		{
+			
+		}
+
+		void TcpSession::start()
+		{
+			go [=]()
+			{
+				this->go_send();
+			};
+
+			go [=]()
+			{
+				this->go_receive();
+			};
+		}
+
+		void TcpSession::send(Buffer&& buf)
+		{
+
+		}
+
+		void TcpSession::shutdown()
+		{
+		}
+
+		Endpoint TcpSession::local_addr()
+		{
+			return	local_addr_;
+		}
+
+		Endpoint TcpSession::remote_addr()
+		{
+			return	remote_addr_;
+		}
+
+		void TcpSession::go_send()
+		{
+			DLOG(INFO) << __FUNCTION__ ;
+			for(;;)
+			{
+
+			}
+		}
+
+		void TcpSession::go_receive()
+		{
+			DLOG(INFO) << __FUNCTION__ ;
+			for(;;)
+			{
+
+			}
+		}
+
+		tcp_io_service& get_tcp_io_service()
+		{
+			static tcp_io_service io_service;
+			return	io_service;
+		}
+
+	}
+}
+
