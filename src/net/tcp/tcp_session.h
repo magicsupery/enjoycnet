@@ -26,6 +26,7 @@ namespace enjoyc
 			public:
 				virtual void start() override;
 				virtual void send(Buffer&& buf) override;
+				virtual void send(const char* data, size_t len) override;
 				virtual void shutdown() override;
 				virtual Endpoint local_addr() override;
 				virtual Endpoint remote_addr() override;
@@ -36,6 +37,7 @@ namespace enjoyc
 
 				void on_close_send();
 				void on_close_receive();
+
 			private:
 				TcpSocketPtr socket_ptr_;
 				

@@ -12,6 +12,7 @@ namespace enjoyc
 			public:
 				virtual void start() = 0;
 				virtual void send(Buffer&& buf) = 0;
+				virtual void send(const char* data, size_t data_len) = 0;
 				virtual void shutdown() = 0;
 				virtual Endpoint local_addr() = 0;
 				virtual Endpoint remote_addr() = 0;
@@ -28,6 +29,12 @@ namespace enjoyc
 			{
 				return;
 			}
+
+			virtual void send(const char* data, size_t len)
+			{
+				return;
+			}
+
 			virtual void shutdown() override
 			{
 				return;
@@ -50,7 +57,7 @@ namespace enjoyc
 				SessionEntry(SessionImpl impl): session_impl_(impl) {}
 				
 				template<typename T>
-				explicit SessionEntry(std::shared_ptr<T> impl,
+				SessionEntry(std::shared_ptr<T> impl,
 						typename std::enable_if<std::is_base_of<SessionBase, T>::value>::type* = nullptr)
 				{
 					session_impl_ = std::static_pointer_cast<SessionBase>(impl);

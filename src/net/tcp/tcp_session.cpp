@@ -1,6 +1,7 @@
 #include "tcp_session.h"
 #include "assert.h"
 #include <glog/logging.h>
+#include "../../option/parser/parser.h"
 
 
 namespace enjoyc
@@ -66,6 +67,20 @@ namespace enjoyc
 			}
 		}
 
+		void TcpSession::send(const char* data, size_t len)
+		{
+
+			if(closed_flag_.load() or not send_flag_.load())
+				return;
+
+			auto buffer_ptr = std::make_shared<Buffer>(len);
+			memcpy(buffer_ptr->data(), data, len);
+			if(not msg_chan_.TryPush(buffer_ptr))
+			{
+				LOG(ERROR) << __FUNCTION__ << this << " msg chan full";
+			}
+		}
+
 		void TcpSession::shutdown()
 		{
 		}
@@ -79,7 +94,7 @@ namespace enjoyc
 		{
 			return	remote_addr_;
 		}
-		
+
 		//------------------------------private method----------------------------------
 		void TcpSession::go_send()
 		{
@@ -98,7 +113,7 @@ namespace enjoyc
 					{
 						if(buffers.size() != 0)
 							break;
-						
+
 						//no msg at all, wait until has one
 						msg_chan_ >> buffer_ptr;
 					}
@@ -110,7 +125,7 @@ namespace enjoyc
 				boost_ec ec;
 				auto send_size = boost::asio::write(*socket_ptr_, buffers, ec);
 				assert(send_size == send_once_size);
-					
+
 				buffers.clear();
 				buffer_ptr = nullptr;
 				send_once_size = 0;
@@ -126,19 +141,20 @@ namespace enjoyc
 		void TcpSession::go_receive()
 		{
 			DLOG(INFO) << __FUNCTION__ ;
-			
+
 			boost_ec ec;
 			char read_buf[max_read_buf_num_];
 			for(;;)
 			{
 				size_t n = socket_ptr_->read_some(boost::asio::buffer(read_buf, max_read_buf_num_), ec);
+				option_session_ptr_->get_parser_ptr()->parse_message(shared_from_this(), read_buf, n);
 				if(ec)
 				{
 					LOG(ERROR) << __FUNCTION__ << " " << this << " " << "read socket error" << ec.message();
 					on_close_receive();
 					return;
 				}
-					
+
 			}
 		}
 
@@ -150,7 +166,10 @@ namespace enjoyc
 		void TcpSession::on_close_receive()
 		{
 		}
+
 	}
+
 }
+
 
 
