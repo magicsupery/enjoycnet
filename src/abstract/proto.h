@@ -17,7 +17,8 @@ namespace enjoyc
 		class Proto
 		{
 			public:
-				virtual ~Proto() {}
+				Proto() = default;
+				virtual ~Proto() = default;
 
 				int type() const;
 				int protocol() const;
@@ -31,6 +32,12 @@ namespace enjoyc
 				{
 				   	return std::shared_ptr<ClientImplInterface>();
 			   	};
+
+				static Proto* instance()
+				{
+					static Proto p;
+					return &p;
+				}
 
 			protected:
 				explicit Proto(int family, ProtoType proto_type = ProtoType::tcp)

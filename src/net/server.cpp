@@ -1,5 +1,6 @@
 #include "server.h"
 #include "../abstract/error.h"
+#include "tcp/tcp.h"
 
 namespace enjoyc
 {
@@ -26,7 +27,7 @@ namespace enjoyc
 			Proto* proto_ptr = nullptr;	
 			if(local_addr_->get_proto_type() == ProtoType::tcp)
 			{
-				proto_ptr = nullptr;
+				proto_ptr = Tcp::instance();
 			}
 			else
 			{

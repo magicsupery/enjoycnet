@@ -52,10 +52,9 @@ namespace enjoyc
 
 		void TcpServer::go_accept()
 		{
-			DLOG(INFO) << __FUNCTION__ ;
-
 			for(;;)
 			{
+				DLOG(INFO) << __FUNCTION__ ;
 				TcpSocketPtr socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>
 					(get_tcp_io_service());
 				acceptor_ptr_->accept(*socket_ptr);

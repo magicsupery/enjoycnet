@@ -55,19 +55,11 @@ namespace enjoyc
 		void TcpSession::go_send()
 		{
 			DLOG(INFO) << __FUNCTION__ ;
-			for(;;)
-			{
-
-			}
 		}
 
 		void TcpSession::go_receive()
 		{
 			DLOG(INFO) << __FUNCTION__ ;
-			for(;;)
-			{
-
-			}
 		}
 
 		tcp_io_service& get_tcp_io_service()
