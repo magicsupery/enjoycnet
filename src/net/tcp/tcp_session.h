@@ -19,7 +19,7 @@ namespace enjoyc
 		{
 			public:
 				explicit TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr,
-						Endpoint const& local_addr, Endpoint const& remote_addr);
+						Endpoint const& local_addr);
 
 			public:
 				virtual void start() override;

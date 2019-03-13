@@ -8,10 +8,12 @@ namespace enjoyc
 	{
 
 		TcpSession::TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr, 
-				Endpoint const& local_addr, Endpoint const& remote_addr)
+				Endpoint const& local_addr)
 			:socket_ptr_(tcp_socket_ptr),
 			 local_addr_(local_addr),
-			 remote_addr_(remote_addr),
+			 remote_addr_(tcp_socket_ptr->remote_endpoint().address(),
+					 tcp_socket_ptr->remote_endpoint().port(), 
+					 local_addr.get_proto_type(), local_addr.get_path()),
 			 option_session_ptr_(std::unique_ptr<
 					 OptionSessionDefine>(new OptionSessionDefine(option_ptr->define_data_)))
 		{

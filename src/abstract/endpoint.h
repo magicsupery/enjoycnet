@@ -14,14 +14,20 @@ namespace enjoyc
 				Endpoint() = default;
 				Endpoint(const Endpoint&) = default;
 				Endpoint(Endpoint&&) = default;
-				Endpoint& operator=(const Endpoint&) = delete;
-				Endpoint& operator=(Endpoint&&) = delete;
+				Endpoint& operator=(const Endpoint&) = default;
+				Endpoint& operator=(Endpoint&&) = default;
 
 			public:
 				explicit Endpoint(boost::asio::ip::address const& addr, int host)
 				:BaseType(addr, host),
 				 proto_type_(ProtoType::unkown),
 				 path_(""){}
+
+				explicit Endpoint(boost::asio::ip::address const& addr, int host,
+						ProtoType proto_type, std::string const& path)
+				:BaseType(addr, host),
+				 proto_type_(proto_type),
+				 path_(path){}
 				 
 			public:
 				operator ::boost::asio::ip::tcp::endpoint() const

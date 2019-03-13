@@ -12,8 +12,8 @@ namespace enjoyc
 			http,
 		};
 
-		class ServerBase;
-		class ClientBase;
+		class ServerImplInterface;
+		class ClientImplInterface;
 		class Proto
 		{
 			public:
@@ -23,8 +23,15 @@ namespace enjoyc
 				int protocol() const;
 				int family() const {return family_;}
 
-				virtual std::shared_ptr<ServerBase> create_server_impl() { return std::shared_ptr<ServerBase>(); };
-				virtual std::shared_ptr<ClientBase> create_client_impl() { return std::shared_ptr<ClientBase>(); };
+				virtual std::shared_ptr<ServerImplInterface> create_server_impl() 
+				{ 
+					return std::shared_ptr<ServerImplInterface>(); 
+				};
+				virtual std::shared_ptr<ClientImplInterface> create_client_impl() 
+				{
+				   	return std::shared_ptr<ClientImplInterface>();
+			   	};
+
 			protected:
 				explicit Proto(int family, ProtoType proto_type = ProtoType::tcp)
 					:family_(family),
