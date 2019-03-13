@@ -35,7 +35,7 @@ namespace enjoyc
 		class OptionSessionDefine: public std::enable_shared_from_this<OptionSessionDefine>
 		{
 			public:
-				OptionSessionDefine(OptionSessionDefineData const& data);
+				OptionSessionDefine(OptionSessionDefineData const& data){}
 
 			private:
 				OptionParserPtr parser_ptr_;
