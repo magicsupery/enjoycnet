@@ -10,6 +10,8 @@ namespace enjoyc
 				SessionEntry session_entry, const char* data, size_t data_len)
 		{
 			session_entry->send(data, data_len);
+
+			session_entry->shutdown();
 		}
 	}
 }

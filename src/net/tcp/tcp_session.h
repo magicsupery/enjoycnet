@@ -34,20 +34,21 @@ namespace enjoyc
 			private:
 				void go_send();
 				void go_receive();
-
+				
 				void on_close_send();
 				void on_close_receive();
+				void real_close();
 
 			private:
 				TcpSocketPtr socket_ptr_;
 				
 				Endpoint local_addr_;
-				Endpoint remote_addr_;	
+				Endpoint remote_addr_;
 				
 				OptionSessionPtr option_session_ptr_;
 
-				co::atomic_t<bool> send_flag_;
-				co::atomic_t<bool> receive_flag_;
+				co::atomic_t<bool> send_closed_flag_;
+				co::atomic_t<bool> receive_closed_flag_;
 				co::atomic_t<bool> closed_flag_;
 
 				MsgChan  msg_chan_;

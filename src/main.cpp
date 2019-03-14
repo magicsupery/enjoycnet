@@ -15,18 +15,6 @@ int main()
 		std::cout << "parse wrong with " << ec.message() << std::endl;
 	}
 
-	/*
-	co_chan<int> chan_(1024);
-
-	int a = 0;
-
-	if(!chan_.TryPop(a))
-	{
-		LOG(INFO) << "not data try pop";
-		chan_ >> a;
-	}
-
-	*/
 	::co::CoroutineOptions::getInstance().debug |= co::dbg_channel;
 	co_sched.Start();
 
