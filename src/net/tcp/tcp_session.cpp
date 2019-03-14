@@ -111,11 +111,13 @@ namespace enjoyc
 			std::vector<boost::asio::const_buffer> buffers;
 			BufferPtr buffer_ptr = nullptr;
 			size_t send_once_size = 0;
+			size_t cur_num = 0;
+			size_t max_once_send_num = std::min<int>(64, boost::asio::detail::max_iov_len);
 			for(;;)
 			{
 
 				//get buffers as much as possible
-				while(true)
+				while(cur_num < max_once_send_num)
 				{
 					if(!msg_chan_.TryPop(buffer_ptr))
 					{
@@ -135,6 +137,7 @@ namespace enjoyc
 
 					buffers.emplace_back(boost::asio::buffer(buffer_ptr->data(), buffer_ptr->size()));
 					send_once_size += buffer_ptr->size();
+					cur_num ++;
 				}
 
 				boost_ec ec;
@@ -144,6 +147,7 @@ namespace enjoyc
 				buffers.clear();
 				buffer_ptr = nullptr;
 				send_once_size = 0;
+				cur_num = 0;
 				if(ec)
 				{
 					LOG(ERROR) << __FUNCTION__ << " " << this << " " << "write socket error" << ec.message();
