@@ -1,15 +1,18 @@
-#include "abstract/endpoint.h"
 #include <glog/logging.h>
-#include "net/server.h"
 #include <libgo/coroutine.h>
+#include "net/tcp/tcp.h"
+#include "net/server.h"
+#include "option/option.h"
 
 
 using namespace enjoyc::net;
 using boost::system::error_code;
 int main()
 {
-	Server s;	
-	auto ec = s.start("tcp://127.0.0.1:9876", std::make_shared<Option>());
+
+	boost_ec ec;
+	Server<Tcp, Option> s(Endpoint::from_string("tcp://127.0.0.1:9876", ec));
+	ec = s.start();
 	if(ec)
 	{
 		std::cout << "parse wrong with " << ec.message() << std::endl;

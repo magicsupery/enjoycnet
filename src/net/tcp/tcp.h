@@ -13,7 +13,7 @@ namespace enjoyc
 			public:
 				virtual std::shared_ptr<ServerImplInterface> create_server_impl() override;
 				virtual std::shared_ptr<ClientImplInterface> create_client_impl() override;
-				static Proto* instance() ;
+				static Tcp* instance() ;
 		};
 	}
 }

@@ -8,23 +8,34 @@ namespace enjoyc
 	{
 
 		using ServerImpl = std::shared_ptr<ServerImplInterface>;
-		using EndPointPtr = std::shared_ptr<Endpoint>;
-		using OptionPtr = std::shared_ptr<Option>;
+		template<typename ProtoT, typename OptionT>
 		class Server
 		{
+			using OptionPtr = std::shared_ptr<OptionT>;
 			public:
-				Server();
-				~Server();
+				Server(Endpoint ep):
+					local_addr_(ep),
+					option_ptr_(new OptionT),
+					proto_(ProtoT::instance()){}
 
-				boost_ec start(std::string const& url, OptionPtr option_ptr);
+				~Server(){};
+
+				boost_ec start()
+				{
+					impl_ = proto_->create_server_impl();
+					boost_ec ec;
+					ec = impl_->start(local_addr_, option_ptr_);
+					return ec;
+				}
 				void shutdown();
 				
 				OptionPtr get_option();
 
 			private:
 				ServerImpl impl_;
-				EndPointPtr local_addr_;
+				Endpoint local_addr_;
 				OptionPtr option_ptr_;
+				ProtoT* proto_;
 
 		};
 	}

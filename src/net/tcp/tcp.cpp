@@ -18,7 +18,7 @@ namespace enjoyc
 			return nullptr;
 		}
 
-		Proto* Tcp::instance()
+		Tcp* Tcp::instance()
 		{
 			static Tcp tcp;
 			return	&tcp;
