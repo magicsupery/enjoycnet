@@ -19,16 +19,8 @@ namespace enjoyc
 
 			public:
 				explicit Endpoint(boost::asio::ip::address const& addr, int host)
-				:BaseType(addr, host),
-				 proto_type_(ProtoType::unkown),
-				 path_(""){}
+				:BaseType(addr, host){}
 
-				explicit Endpoint(boost::asio::ip::address const& addr, int host,
-						ProtoType proto_type, std::string const& path)
-				:BaseType(addr, host),
-				 proto_type_(proto_type),
-				 path_(path){}
-				 
 			public:
 				operator ::boost::asio::ip::tcp::endpoint() const
 				{
@@ -41,33 +33,7 @@ namespace enjoyc
 				}
 
 			public:
-				ProtoType get_proto_type() const
-				{
-					return proto_type_;
-				}
-
-				void set_proto_type(ProtoType proto)
-				{
-					proto_type_ = proto;
-				}
-
-				std::string const& get_path() const
-				{
-					return path_;
-				}
-
-				void set_path(std::string const& path)
-				{
-					path_ = path;
-				}
-			
-			public:
-				std::string to_string(boost_ec& ec) const;
-				static Endpoint from_string(std::string const& url, boost_ec& ec);
-			private:
-				ProtoType proto_type_;
-				std::string path_;
-
+				static Endpoint generate(std::string host, int port, boost_ec& ec);
 		};
 	};
 };

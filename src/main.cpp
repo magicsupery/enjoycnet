@@ -11,14 +11,16 @@ int main()
 {
 
 	boost_ec ec;
-	Server<Tcp, Option> s(Endpoint::from_string("tcp://127.0.0.1:9876", ec));
-	ec = s.start();
+	Server<Tcp, Option> s(Endpoint::generate("127.0.0.1", 9876, ec));
 	if(ec)
 	{
 		std::cout << "parse wrong with " << ec.message() << std::endl;
+		return 0;
 	}
 
-	::co::CoroutineOptions::getInstance().debug |= co::dbg_channel;
+
+	ec = s.start();
+	//::co::CoroutineOptions::getInstance().debug |= co::dbg_channel;
 	co_sched.Start();
 
 }
