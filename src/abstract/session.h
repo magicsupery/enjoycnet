@@ -68,12 +68,12 @@ namespace enjoyc
 					return get_ptr();
 				}
 
-			private:
 				inline SessionBase* get_ptr()
 				{
 					return session_impl_ ? session_impl_.get() : &fake_session_;
 				}
 
+			private:
 				static FakeSession fake_session_;
 				SessionImpl session_impl_;
 		};

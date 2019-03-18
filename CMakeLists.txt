@@ -59,7 +59,7 @@ add_executable(${projectName} ${SRC_LIST})
 
 # add link libs
 message(${Boost_LIBRARIES})
-set(LINK_ARGS ${Boost_LIBRARIES} libgo gflags glog pthread dl libgonet)
+set(LINK_ARGS ${Boost_LIBRARIES} libgo gflags glog pthread dl)
 target_link_libraries(${projectName} ${LINK_ARGS})
 
 

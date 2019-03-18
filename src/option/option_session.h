@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "parser/default_parser.h"
+#include "parser/http_parser.h"
 
 namespace enjoyc
 {
@@ -39,8 +40,9 @@ namespace enjoyc
 				{
 					if(data.parser_type_ == ParserType::unkwon)
 					{
-						parser_ptr_ = std::make_shared<DefaultParser>();
+						parser_ptr_ = std::make_shared<HttpParser>();
 					}
+
 				}
 				
 				inline ParserPtr get_parser_ptr()
