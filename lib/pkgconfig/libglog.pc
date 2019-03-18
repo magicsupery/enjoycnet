@@ -1,4 +1,4 @@
-prefix=/home/ycn2308/work_proj/git_proj/enjoychttp/build_tool_for_c/install/release
+prefix=/home/ycn2308/work_proj/git_proj/enjoycnet/build_tool_for_c/install/release
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
