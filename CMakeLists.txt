@@ -44,22 +44,28 @@ else()
 endif()
 # add include and lib other project
 include_directories(${PROJECT_SOURCE_DIR}/include)
-link_directories(${PROJECT_SOURCE_DIR}/lib)
+#link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 # add my project .h and .cpp
 include_directories(${PROJECT_SOURCE_DIR})
 
-aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/abstract SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/net SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/net/tcp SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/option  SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/handler SRC_LIST)
-add_executable(${projectName} ${SRC_LIST})
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/abstract SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/net SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/net/tcp SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/option  SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/handler SRC_LIST)
+
+set(TARGET ${projectName})
+add_library(${TARGET} ${SRC_LIST})
+
+
+install(TARGETS ${TARGET} LIBRARY DESTINATION "lib" ARCHIVE DESTINATION "lib")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/enjoycnet DESTINATION "include" FILES_MATCHING PATTERN "*.h")
 
 # add link libs
-message(${Boost_LIBRARIES})
-set(LINK_ARGS ${Boost_LIBRARIES} libgo gflags glog pthread dl)
-target_link_libraries(${projectName} ${LINK_ARGS})
+#message(${Boost_LIBRARIES})
+#set(LINK_ARGS ${Boost_LIBRARIES} libgo gflags glog pthread dl)
+#target_link_libraries(${projectName} ${LINK_ARGS})
 
 
