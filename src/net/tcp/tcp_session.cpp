@@ -1,8 +1,6 @@
 #include "tcp_session.h"
 #include "assert.h"
 #include <glog/logging.h>
-#include "../../option/parser/parser.h"
-
 
 namespace enjoyc
 {
@@ -16,15 +14,13 @@ namespace enjoyc
 		}
 
 
-		TcpSession::TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr, 
+		TcpSession::TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr, SessionHandlerPtr handler_ptr,
 				Endpoint const& local_addr)
 			:socket_ptr_(tcp_socket_ptr),
+			 handler_ptr_(handler_ptr),
 			 local_addr_(local_addr),
 			 remote_addr_(tcp_socket_ptr->remote_endpoint().address(),
 					 tcp_socket_ptr->remote_endpoint().port()),
-			 option_session_ptr_(std::unique_ptr<
-					 OptionSessionDefine>(new OptionSessionDefine(option_ptr->define_data_))),
-
 			 msg_chan_(option_ptr->net_.msg_chan_buffer_num_),
 			 max_read_buf_num_(option_ptr->net_.read_buffer_num_)
 		{
@@ -34,7 +30,6 @@ namespace enjoyc
 		TcpSession::~TcpSession()
 		{
 			DLOG(INFO) << __FUNCTION__ << " " << this;
-			assert(option_session_ptr_ == nullptr);
 		}
 
 		void TcpSession::start()
@@ -165,7 +160,7 @@ namespace enjoyc
 			for(;;)
 			{
 				size_t n = socket_ptr_->read_some(boost::asio::buffer(read_buf, max_read_buf_num_), ec);
-				option_session_ptr_->get_parser_ptr()->parse_message(shared_from_this(), read_buf, n);
+				handler_ptr_->parse_message(shared_from_this(), read_buf, n);
 				if(ec)
 				{
 					LOG(ERROR) << __FUNCTION__ << " " << this << " " << "read socket error" << ec.message();

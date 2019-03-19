@@ -23,7 +23,7 @@ namespace enjoyc
 				int type() const;
 				int protocol() const;
 				int family() const {return family_;}
-
+				
 				virtual std::shared_ptr<ServerImplInterface> create_server_impl() 
 				{ 
 					return std::shared_ptr<ServerImplInterface>(); 

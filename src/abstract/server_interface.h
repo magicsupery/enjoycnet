@@ -2,6 +2,7 @@
 #include <memory>
 #include "endpoint.h"
 #include "session.h"
+#include "session_handler.h"
 #include "../option/option.h"
 
 namespace enjoyc
@@ -14,7 +15,7 @@ namespace enjoyc
 		{
 			public:
 				virtual ~ServerImplInterface(){}
-				virtual boost_ec start(Endpoint ep, OptionPtr ptr) = 0;
+				virtual boost_ec start(Endpoint ep, OptionPtr ptr, SessionHandlerPtr handler_ptr) = 0;
 				virtual void shutdown() = 0;
 				virtual OptionPtr get_option() = 0; 
 				virtual SessionEntry get_session() = 0;

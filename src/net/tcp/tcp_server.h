@@ -1,6 +1,7 @@
 #pragma once
 #include "tcp_session.h"
 #include "../../abstract/server_interface.h"
+#include "../../abstract/session_handler.h"
 
 namespace enjoyc
 {
@@ -15,7 +16,7 @@ namespace enjoyc
 				~TcpServer() = default;
 			public:
 				// from ImplInterface
-				virtual boost_ec start(Endpoint ep, OptionPtr ptr) override;
+				virtual boost_ec start(Endpoint ep, OptionPtr ptr, SessionHandlerPtr handler_ptr) override;
 				virtual void shutdown() override;
 				virtual OptionPtr get_option() override;
 				virtual SessionEntry get_session() override;
@@ -25,6 +26,7 @@ namespace enjoyc
 
 			private:
 				OptionPtr option_ptr_;
+				SessionHandlerPtr handler_ptr_;
 				Endpoint local_addr_;
 				AcceptorPtr acceptor_ptr_;
 				

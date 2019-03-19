@@ -1,5 +1,5 @@
-#include "http_parser.h"
-#include "../../abstract/session.h"
+#include "http_handler.h"
+#include "../abstract/session.h"
 #include <glog/logging.h>
 
 
@@ -8,14 +8,24 @@ namespace enjoyc
 	namespace net
 	{
 		
-		HttpParser::HttpParser()
+		const std::string method_names[] =
+		{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+		};
+
+		HttpHandler::HttpHandler()
 			:doc_(rapidhttp::Request)
 			{
-				handler_map_["GET"] = MethodHandlerMap();
-				handler_map_["POST"] = MethodHandlerMap();
+				for(auto name : method_names)
+				{
+					handler_map_[name] = MethodHandlerMap();
+				}		
 			}
 
-		void HttpParser::parse_message(SessionEntry session_entry, const char* data, size_t data_len)
+		void HttpHandler::parse_message(SessionEntry session_entry, const char* data, size_t data_len)
 		{
 			doc_.PartailParse(data, data_len);
 
@@ -29,7 +39,6 @@ namespace enjoyc
 			if(doc_.ParseDone())
 			{
 
-				DLOG(INFO) << "method is " << doc_.GetMethod().c_str();
 				DLOG(INFO) << "uri is " << doc_.GetUri();
 				rapidhttp::HttpDocument doc(rapidhttp::Response);
 				
@@ -48,6 +57,7 @@ namespace enjoyc
 							doc.SetStatus("OK");
 							doc.SetField("Content-Length", std::to_string(doc.GetBody().size()));
 						}
+
 						not_found = false;
 					}
 				}
@@ -76,7 +86,12 @@ namespace enjoyc
 			}
 		}
 
-		void HttpParser::register_handler(std::string const& method, std::string const& uri, HttpCb cb)
+		SessionHandlerPtr HttpHandler::get_copy()
+		{
+			return std::make_shared<HttpHandler>();
+		}
+
+		void HttpHandler::register_handler(std::string const& method, std::string const& uri, HttpCb cb)
 		{
 			if(handler_map_.find(method) != handler_map_.end())
 			{
@@ -87,8 +102,10 @@ namespace enjoyc
 				LOG(ERROR) << "unsupported http handler type " << method;
 			}
 		}
+
 	}
 }
+
 
 
 

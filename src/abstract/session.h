@@ -77,5 +77,6 @@ namespace enjoyc
 				static FakeSession fake_session_;
 				SessionImpl session_impl_;
 		};
+		
 	}
 }

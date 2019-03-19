@@ -3,6 +3,7 @@
 #include "net/tcp/tcp.h"
 #include "net/server.h"
 #include "option/option.h"
+#include "handler/http_handler.h"
 
 
 using namespace enjoyc::net;
@@ -11,13 +12,14 @@ int main()
 {
 
 	boost_ec ec;
-	Server<Tcp, Option> s(Endpoint::generate("127.0.0.1", 9876, ec));
+	Server<Tcp, HttpHandler> s(Endpoint::generate("127.0.0.1", 9876, ec));
 	if(ec)
 	{
 		std::cout << "parse wrong with " << ec.message() << std::endl;
 		return 0;
 	}
-
+	
+	// set options 
 
 	ec = s.start();
 	//::co::CoroutineOptions::getInstance().debug |= co::dbg_channel;

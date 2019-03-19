@@ -54,7 +54,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src/abstract SRC_LIST)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/net SRC_LIST)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/net/tcp SRC_LIST)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/option  SRC_LIST)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/option/parser  SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/handler SRC_LIST)
 add_executable(${projectName} ${SRC_LIST})
 
 # add link libs

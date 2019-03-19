@@ -6,9 +6,10 @@ namespace enjoyc
 	namespace net
 	{
 		
-		boost_ec TcpServer::start(Endpoint ep, OptionPtr ptr)
+		boost_ec TcpServer::start(Endpoint ep, OptionPtr ptr, SessionHandlerPtr handler_ptr)
 		{
 			option_ptr_ = ptr;
+			handler_ptr_ = handler_ptr;
 			local_addr_ = ep;
 			acceptor_ptr_.reset(new boost::asio::ip::tcp::acceptor(get_tcp_io_service()));	
 			try
@@ -60,9 +61,12 @@ namespace enjoyc
 					(get_tcp_io_service());
 				acceptor_ptr_->accept(*socket_ptr);
 				
-				auto tcp_session_ptr = std::make_shared<TcpSession>(socket_ptr, option_ptr_, local_addr_);
+				auto new_handler_ptr = handler_ptr_->get_copy();
+								
+				auto tcp_session_ptr = std::make_shared<TcpSession>(socket_ptr, option_ptr_, new_handler_ptr, local_addr_);
 				tcp_session_ptr->start();
 				sessions.emplace_back(tcp_session_ptr);
+
 			}
 		}
 

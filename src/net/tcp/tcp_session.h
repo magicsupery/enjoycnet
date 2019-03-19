@@ -1,6 +1,7 @@
 #pragma once
 #include "../../abstract/session.h"
 #include "../../option/option.h"
+#include "../../abstract/session_handler.h"
 #include <libgo/coroutine.h>
 
 namespace enjoyc
@@ -12,15 +13,13 @@ namespace enjoyc
 		
 		using BufferPtr = std::shared_ptr<Buffer>;
 		using MsgChan = co_chan<BufferPtr>;
-		using OptionSessionPtr = std::unique_ptr<OptionSessionDefine>;
-
 		class TcpSession
 			:public std::enable_shared_from_this<TcpSession>,
 			 public SessionBase
 		{
 			public:
-				explicit TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr,
-						Endpoint const& local_addr);
+				explicit TcpSession(TcpSocketPtr tcp_socket_ptr, OptionPtr option_ptr, 
+						SessionHandlerPtr handler_ptr, Endpoint const& local_addr);
 
 				~TcpSession();
 			public:
@@ -41,12 +40,10 @@ namespace enjoyc
 
 			private:
 				TcpSocketPtr socket_ptr_;
-				
+				SessionHandlerPtr handler_ptr_;				
 				Endpoint local_addr_;
 				Endpoint remote_addr_;
 				
-				OptionSessionPtr option_session_ptr_;
-
 				co::atomic_t<bool> send_closed_flag_;
 				co::atomic_t<bool> receive_closed_flag_;
 				co::atomic_t<bool> closed_flag_;

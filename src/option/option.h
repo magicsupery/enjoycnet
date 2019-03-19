@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include "option_session.h"
 
 namespace enjoyc
 {
@@ -26,7 +25,6 @@ namespace enjoyc
 		{
 			public:
 				OptionNet net_;
-				OptionSessionDefineData define_data_;
 		};
 
 		using OptionPtr = std::shared_ptr<Option>;
