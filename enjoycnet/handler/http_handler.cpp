@@ -8,22 +8,11 @@ namespace enjoyc
 	namespace net
 	{
 		
-		const std::string method_names[] =
-		{
-			"GET",
-			"POST",
-			"PUT",
-			"DELETE",
-		};
-
 		HttpHandler::HttpHandler()
-			:doc_(rapidhttp::Request)
-			{
-				for(auto name : method_names)
-				{
-					handler_map_[name] = MethodHandlerMap();
-				}		
-			}
+			:doc_(rapidhttp::Request),
+			router_ptr_(new HttpRouter)
+		{
+		}
 
 		void HttpHandler::parse_message(SessionEntry session_entry, const char* data, size_t data_len)
 		{
@@ -42,34 +31,7 @@ namespace enjoyc
 				DLOG(INFO) << "uri is " << doc_.GetUri();
 				rapidhttp::HttpDocument doc(rapidhttp::Response);
 				
-				//process handler
-				auto& method = doc_.GetMethod();	
-				bool not_found = true;
-				if(handler_map_.find(method) != handler_map_.end())
-				{
-					auto& method_handler_map = handler_map_[method];
-					auto& uri = doc_.GetUri();
-					if(method_handler_map.find(uri) != method_handler_map.end())
-					{
-						if(method_handler_map[uri](doc_, doc))
-						{
-							doc.SetStatusCode(200);
-							doc.SetStatus("OK");
-							doc.SetField("Content-Length", std::to_string(doc.GetBody().size()));
-						}
-
-						not_found = false;
-					}
-				}
-
-				if(not_found)
-				{
-					//default handler not found
-					doc.SetStatusCode(404);
-					doc.SetStatus("Not Found");
-					doc.SetField("Content-Length", "0");
-				}
-
+				router_ptr_->route(doc_, doc);
 				size_t len = doc.ByteSize();
 				char buf[len];
 				if(doc.Serialize(buf, len))
@@ -88,19 +50,9 @@ namespace enjoyc
 
 		SessionHandlerPtr HttpHandler::get_copy()
 		{
-			return std::make_shared<HttpHandler>();
-		}
-
-		void HttpHandler::register_handler(std::string const& method, std::string const& uri, HttpCb cb)
-		{
-			if(handler_map_.find(method) != handler_map_.end())
-			{
-				handler_map_[method][uri] = cb;
-			}
-			else
-			{
-				LOG(ERROR) << "unsupported http handler type " << method;
-			}
+			auto ptr = std::make_shared<HttpHandler>();
+			ptr->set_router_ptr(router_ptr_);
+			return ptr;
 		}
 
 	}

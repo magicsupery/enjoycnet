@@ -1,15 +1,11 @@
 #pragma once
 #include "../abstract/session_handler.h"
-#include <rapidhttp/rapidhttp.h>
-#include <functional>
-#include <unordered_map>
+#include "http_router.h"
+
 namespace enjoyc
 {
 	namespace net
 	{
-		using HttpCb = std::function<bool(rapidhttp::HttpDocument&, rapidhttp::HttpDocument&)>;
-		using MethodHandlerMap = std::unordered_map<std::string, HttpCb>;
-		using HandlerMap = std::unordered_map<std::string, MethodHandlerMap>;
 		class HttpHandler: public SessionHandler
 		{
 			public:
@@ -23,10 +19,15 @@ namespace enjoyc
 				virtual SessionHandlerPtr get_copy() override;
 			
 			public:
-				void register_handler(std::string const& method, std::string const& uri, HttpCb cb);
+				void set_router_ptr(HttpRouterPtr router_ptr)
+				{
+					router_ptr_ = router_ptr;
+				}
+
 			private:
 				rapidhttp::HttpDocument doc_;
-				HandlerMap handler_map_;
+
+				HttpRouterPtr router_ptr_;
 		};
 	}
 }

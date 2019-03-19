@@ -33,6 +33,11 @@ namespace enjoyc
 				
 				OptionPtr get_option();
 
+				SessionHandlerPtr get_handler()
+				{
+					return handler_ptr_;
+				}
+
 			private:
 				ServerImpl impl_;
 				Endpoint local_addr_;
