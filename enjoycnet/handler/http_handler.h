@@ -6,6 +6,7 @@ namespace enjoyc
 {
 	namespace net
 	{
+
 		class HttpHandler: public SessionHandler
 		{
 			public:
@@ -25,7 +26,7 @@ namespace enjoyc
 				}
 
 			private:
-				rapidhttp::HttpDocument doc_;
+				rapidhttp::HttpDocumentRef doc_;
 
 				HttpRouterPtr router_ptr_;
 		};

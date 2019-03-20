@@ -28,7 +28,7 @@ namespace enjoyc
 			if(doc_.ParseDone())
 			{
 
-				DLOG(INFO) << "uri is " << doc_.GetUri();
+				//DLOG(INFO) << "uri is " << doc_.GetUri();
 				rapidhttp::HttpDocument doc(rapidhttp::Response);
 				
 				router_ptr_->route(doc_, doc);
@@ -36,6 +36,7 @@ namespace enjoyc
 				char buf[len];
 				if(doc.Serialize(buf, len))
 				{
+					DLOG(INFO) << "send res";
 					session_entry->send(buf, len);
 				}
 				else
@@ -44,7 +45,20 @@ namespace enjoyc
 						doc.ParseError().message();
 				}
 
-				doc_.Reset();
+				
+
+
+				//DLOG(INFO) << "connection is " << doc_.GetField("Connection");
+				if(doc_.GetField("Connection") != "keep-alive")
+				{
+					doc_.Reset();
+					session_entry->shutdown();
+				}	
+				else
+				{
+					doc_.Reset();
+				}
+
 			}
 		}
 

@@ -1,6 +1,7 @@
 #include "tcp_session.h"
 #include "assert.h"
 #include <glog/logging.h>
+#include <random>
 
 namespace enjoyc
 {
@@ -51,7 +52,7 @@ namespace enjoyc
 
 		void TcpSession::send(Buffer&& buf)
 		{
-			if(closed_flag_ or send_closed_flag_)
+			if(closed_flag_.load() or send_closed_flag_.load())
 				return;
 
 			auto buffer_ptr = std::make_shared<Buffer>();
@@ -65,7 +66,7 @@ namespace enjoyc
 		void TcpSession::send(const char* data, size_t len)
 		{
 
-			if(closed_flag_ or send_closed_flag_)
+			if(closed_flag_.load() or send_closed_flag_.load())
 				return;
 
 			auto buffer_ptr = std::make_shared<Buffer>(len);
@@ -78,7 +79,8 @@ namespace enjoyc
 
 		void TcpSession::shutdown()
 		{
-			if(closed_flag_)
+			DLOG(INFO) << __FUNCTION__ ;
+			if(closed_flag_.load())
 				return;
 
 			boost_ec ec;
@@ -107,6 +109,7 @@ namespace enjoyc
 			size_t send_once_size = 0;
 			size_t cur_num = 0;
 			size_t max_once_send_num = std::min<int>(64, boost::asio::detail::max_iov_len);
+			std::vector<BufferPtr> send_buffer_ptrs(max_once_send_num);
 			for(;;)
 			{
 
@@ -124,30 +127,36 @@ namespace enjoyc
 					
 					if(buffer_ptr == nullptr)
 					{
-						LOG(ERROR) << __FUNCTION__ << " " << this << " " << "get shutdown msg";
+						//LOG(ERROR) << __FUNCTION__ << " " << this << " " << "get shutdown msg";
 						on_close_send();
 						return;
 					}
 
 					buffers.emplace_back(boost::asio::buffer(buffer_ptr->data(), buffer_ptr->size()));
+					send_buffer_ptrs.emplace_back(buffer_ptr);
 					send_once_size += buffer_ptr->size();
 					cur_num ++;
 				}
 
 				boost_ec ec;
 				auto send_size = boost::asio::write(*socket_ptr_, buffers, ec);
-				assert(send_size == send_once_size);
 
-				buffers.clear();
 				buffer_ptr = nullptr;
-				send_once_size = 0;
+				buffers.clear();
+				send_buffer_ptrs.clear();
 				cur_num = 0;
 				if(ec)
 				{
-					LOG(ERROR) << __FUNCTION__ << " " << this << " " << "write socket error" << ec.message();
+					//LOG(ERROR) << __FUNCTION__ << " " << this << " " << "write socket error" << ec.message();
 					on_close_send();
 					return;
 				}
+				else
+				{
+					assert(send_size == send_once_size);
+				}
+
+				send_once_size = 0;
 			}
 		}
 
@@ -160,13 +169,13 @@ namespace enjoyc
 			for(;;)
 			{
 				size_t n = socket_ptr_->read_some(boost::asio::buffer(read_buf, max_read_buf_num_), ec);
-				handler_ptr_->parse_message(shared_from_this(), read_buf, n);
 				if(ec)
 				{
-					LOG(ERROR) << __FUNCTION__ << " " << this << " " << "read socket error" << ec.message();
+					//LOG(ERROR) << __FUNCTION__ << " " << this << " " << "read socket error" << ec.message();
 					on_close_receive();
 					return;
 				}
+				handler_ptr_->parse_message(shared_from_this(), read_buf, n);
 
 			}
 		}
@@ -174,21 +183,22 @@ namespace enjoyc
 
 		void TcpSession::on_close_send()
 		{
-			send_closed_flag_ = true;
+			send_closed_flag_.store(true);
+
 			boost_ec ec;
 			socket_ptr_->shutdown(boost::asio::socket_base::shutdown_type::shutdown_send, ec);
-			if(receive_closed_flag_)
+			if(receive_closed_flag_.load())
 				real_close();
 
 		}
 
 		void TcpSession::on_close_receive()
 		{
-			receive_closed_flag_ = true;
+			receive_closed_flag_.store(true);
 
 			boost_ec ec;
 			socket_ptr_->shutdown(boost::asio::socket_base::shutdown_type::shutdown_receive, ec);
-			if(send_closed_flag_)
+			if(send_closed_flag_.load())
 			{
 				real_close();
 			}
@@ -214,7 +224,6 @@ namespace enjoyc
 			{
 				socket_ptr_->close();
 			}			
-			socket_ptr_ = nullptr;
 			
 			//2.clear msg_chan_
 			//

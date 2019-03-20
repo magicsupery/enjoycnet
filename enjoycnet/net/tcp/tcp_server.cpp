@@ -59,7 +59,12 @@ namespace enjoyc
 				DLOG(INFO) << __FUNCTION__ ;
 				TcpSocketPtr socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>
 					(get_tcp_io_service());
-				acceptor_ptr_->accept(*socket_ptr);
+				boost_ec ec;
+				acceptor_ptr_->accept(*socket_ptr, ec);
+				if(ec)
+				{
+					continue;	
+				}
 				
 				auto new_handler_ptr = handler_ptr_->get_copy();
 								

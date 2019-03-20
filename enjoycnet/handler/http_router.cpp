@@ -35,7 +35,7 @@ namespace enjoyc
 			}
 		}
 
-		void HttpRouter::route(rapidhttp::HttpDocument & req, rapidhttp::HttpDocument& res)
+		void HttpRouter::route(HttpRequest& req, HttpResponse& res)
 		{
 
 			auto& method = req.GetMethod();	

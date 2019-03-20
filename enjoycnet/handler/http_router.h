@@ -8,7 +8,9 @@ namespace enjoyc
 	namespace net
 	{
 
-		using HttpCb = std::function<bool(rapidhttp::HttpDocument&, rapidhttp::HttpDocument&)>;
+		using HttpRequest = rapidhttp::HttpDocumentRef;
+		using HttpResponse = rapidhttp::HttpDocument;
+		using HttpCb = std::function<bool(HttpRequest&, HttpResponse&)>;
 		using MethodHandlerMap = std::unordered_map<std::string, HttpCb>;
 		using HandlerMap = std::unordered_map<std::string, MethodHandlerMap>;
 		class HttpRouter
@@ -20,7 +22,7 @@ namespace enjoyc
 			public:
 				void register_handler(std::string const& method, std::string const& uri, HttpCb cb);
 				
-				void route(rapidhttp::HttpDocument& req, rapidhttp::HttpDocument& res);
+				void route(HttpRequest& req, HttpResponse& res);
 			private:
 				HandlerMap handler_map_;
 		};
