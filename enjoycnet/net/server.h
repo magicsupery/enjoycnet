@@ -14,10 +14,12 @@ namespace enjoyc
 		template<typename ProtoT, typename HandlerT>
 		class Server
 		{
+
 			public:
-				Server(Endpoint ep):
+				Server(Endpoint ep, Scheduler* sche, Option* option):
 					local_addr_(ep),
-					option_ptr_(new Option),
+					sche_(sche),
+					option_ptr_(option),
 					proto_(ProtoT::instance()),
 					handler_ptr_(std::static_pointer_cast<SessionHandler>(std::make_shared<HandlerT>())){}
 				~Server(){};
@@ -26,7 +28,7 @@ namespace enjoyc
 				{
 					impl_ = proto_->create_server_impl();
 					boost_ec ec;
-					ec = impl_->start(local_addr_, option_ptr_, handler_ptr_);
+					ec = impl_->start(local_addr_, sche_, option_ptr_, handler_ptr_);
 					return ec;
 				}
 				void shutdown();
@@ -41,6 +43,7 @@ namespace enjoyc
 			private:
 				ServerImpl impl_;
 				Endpoint local_addr_;
+				Scheduler* sche_;
 				OptionPtr option_ptr_;
 				ProtoT* proto_;
 				SessionHandlerPtr handler_ptr_;

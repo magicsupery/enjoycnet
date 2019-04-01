@@ -7,7 +7,7 @@ project(${projectName})
 if (CMAKE_BUILD_TYPE)
 else()
 	#set(CMAKE_BUILD_TYPE RELEASE)
-    set(CMAKE_BUILD_TYPE DEBUG)
+	set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
 
@@ -36,7 +36,7 @@ message("----------------------------------")
 
 # find boost
 set(Boost_USE_STATIC_LIBS   ON)
-find_package(Boost COMPONENTS system regex)
+find_package(Boost COMPONENTS system)
 if(Boost_FOUND)
 else()
 	message("can not find boost, please install boost first")

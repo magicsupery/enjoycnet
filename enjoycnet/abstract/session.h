@@ -13,6 +13,8 @@ namespace enjoyc
 				virtual void start() = 0;
 				virtual void send(Buffer&& buf) = 0;
 				virtual void send(const char* data, size_t data_len) = 0;
+				virtual void send_no_delay(Buffer&& buf) = 0;
+				virtual void send_no_delay(const char* data, size_t data_len) = 0;
 				virtual void shutdown() = 0;
 				virtual Endpoint local_addr() = 0;
 				virtual Endpoint remote_addr() = 0;
@@ -35,10 +37,19 @@ namespace enjoyc
 				return;
 			}
 
+			virtual void send_no_delay(Buffer&& buf)
+			{
+			}
+
+			virtual void send_no_delay(const char* data, size_t data_len)
+			{
+			}
+
 			virtual void shutdown() override
 			{
 				return;
 			}
+
 			virtual Endpoint local_addr() override
 			{
 				return Endpoint();
@@ -53,30 +64,39 @@ namespace enjoyc
 		{
 			using SessionImpl = std::shared_ptr<SessionBase>;
 			public:
-				SessionEntry() = default;
-				SessionEntry(SessionImpl impl): session_impl_(impl) {}
-				
-				template<typename T>
+			SessionEntry() = default;
+			SessionEntry(SessionImpl impl): session_impl_(impl) {}
+
+			template<typename T>
 				SessionEntry(std::shared_ptr<T> impl,
 						typename std::enable_if<std::is_base_of<SessionBase, T>::value>::type* = nullptr)
 				{
 					session_impl_ = std::static_pointer_cast<SessionBase>(impl);
 				}
-				
-				inline SessionBase* operator->()
-				{
-					return get_ptr();
-				}
 
-				inline SessionBase* get_ptr()
-				{
-					return session_impl_ ? session_impl_.get() : &fake_session_;
-				}
+			inline SessionBase* operator->()
+			{
+				return get_ptr();
+			}
+
+			inline SessionBase* get_ptr() const
+			{
+				return session_impl_ ? session_impl_.get() : &fake_session_;
+			}
+
+			friend bool operator<(SessionEntry const& lhs, SessionEntry const& rhs)
+			{
+				return lhs.get_ptr() < rhs.get_ptr();
+			}
+			friend bool operator==(SessionEntry const& lhs, SessionEntry const& rhs)
+			{
+				return lhs.get_ptr() < rhs.get_ptr();
+			}
 
 			private:
-				static FakeSession fake_session_;
-				SessionImpl session_impl_;
+			static FakeSession fake_session_;
+			SessionImpl session_impl_;
 		};
-		
+
 	}
 }

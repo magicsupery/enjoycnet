@@ -14,16 +14,17 @@ namespace enjoyc
 		{
 		}
 
-		void HttpHandler::parse_message(SessionEntry session_entry, const char* data, size_t data_len)
+		size_t HttpHandler::parse_message(SessionEntry session_entry, const char* data, size_t data_len)
 		{
-			doc_.PartailParse(data, data_len);
+			auto handled = doc_.PartailParse(data, data_len);
+			assert(handled == data_len);
 
 			if(doc_.ParseError())
 			{
 				session_entry->shutdown();
 				LOG(ERROR) << __FUNCTION__ << " " << this <<
 					" parse error" << doc_.ParseError().message();
-				return;
+				return 0;
 			}
 			if(doc_.ParseDone())
 			{
@@ -37,19 +38,18 @@ namespace enjoyc
 				if(doc.Serialize(buf, len))
 				{
 					DLOG(INFO) << "send res";
-					session_entry->send(buf, len);
+					session_entry->send_no_delay(buf, len);
 				}
 				else
 				{
 					LOG(ERROR) << __FUNCTION__ << " " << session_entry.get_ptr() << " Serialize error" <<
 						doc.ParseError().message();
+					session_entry->shutdown();
+					return 0;
 				}
 
-				
-
-
 				//DLOG(INFO) << "connection is " << doc_.GetField("Connection");
-				if(doc_.GetField("Connection") != "keep-alive")
+				if(doc_.GetField("Connection") == "close")
 				{
 					doc_.Reset();
 					session_entry->shutdown();
@@ -58,8 +58,11 @@ namespace enjoyc
 				{
 					doc_.Reset();
 				}
-
+				
+				return handled;
 			}
+
+			return 0;
 		}
 
 		SessionHandlerPtr HttpHandler::get_copy()

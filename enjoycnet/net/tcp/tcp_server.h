@@ -16,20 +16,22 @@ namespace enjoyc
 				~TcpServer() = default;
 			public:
 				// from ImplInterface
-				virtual boost_ec start(Endpoint ep, OptionPtr ptr, SessionHandlerPtr handler_ptr) override;
+				virtual boost_ec start(Endpoint ep, Scheduler* sche, 
+						OptionPtr ptr, SessionHandlerPtr handler_ptr) override;
 				virtual void shutdown() override;
 				virtual OptionPtr get_option() override;
 				virtual SessionEntry get_session() override;
-			
+
 			private:
 				virtual void go_accept();
 
 			private:
+				Scheduler* sche_;
 				OptionPtr option_ptr_;
 				SessionHandlerPtr handler_ptr_;
 				Endpoint local_addr_;
 				AcceptorPtr acceptor_ptr_;
-				
+
 		};
 	}
 }

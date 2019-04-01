@@ -14,7 +14,7 @@ namespace enjoyc
 				~HttpHandler() = default;
 
 			public:
-				virtual void parse_message(
+				virtual size_t parse_message(
 						SessionEntry session_entry, const char* data, size_t data_len) override;
 
 				virtual SessionHandlerPtr get_copy() override;

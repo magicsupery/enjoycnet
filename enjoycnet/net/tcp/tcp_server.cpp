@@ -5,9 +5,11 @@ namespace enjoyc
 {
 	namespace net
 	{
-		
-		boost_ec TcpServer::start(Endpoint ep, OptionPtr ptr, SessionHandlerPtr handler_ptr)
+		using reuse_port = boost::asio::detail::socket_option::boolean<SOL_SOCKET, SO_REUSEPORT>;
+		boost_ec TcpServer::start(Endpoint ep, Scheduler* sche, 
+				OptionPtr ptr, SessionHandlerPtr handler_ptr)
 		{
+			sche_ = sche;
 			option_ptr_ = ptr;
 			handler_ptr_ = handler_ptr;
 			local_addr_ = ep;
@@ -19,6 +21,7 @@ namespace enjoyc
 				acceptor_ptr_->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 				acceptor_ptr_->set_option(boost::asio::ip::tcp::socket::keep_alive(true));
 				acceptor_ptr_->set_option(boost::asio::ip::tcp::no_delay(true));
+				acceptor_ptr_->set_option(reuse_port(true));
 
 				acceptor_ptr_->bind(ep);
 				acceptor_ptr_->listen(option_ptr_->net_.listen_backlog_);
@@ -28,7 +31,7 @@ namespace enjoyc
 				return e.code();
 			}
 			
-			go [=]()
+			go co_scheduler(sche_)[=]()
 			{
 				this->go_accept();
 			};	
@@ -53,7 +56,6 @@ namespace enjoyc
 
 		void TcpServer::go_accept()
 		{
-			std::vector<std::shared_ptr<TcpSession>> sessions;
 			for(;;)
 			{
 				DLOG(INFO) << __FUNCTION__ ;
@@ -63,14 +65,16 @@ namespace enjoyc
 				acceptor_ptr_->accept(*socket_ptr, ec);
 				if(ec)
 				{
-					continue;	
+					LOG(ERROR) << __FUNCTION__ << this << " accpet wrong " << ec.message();
+					this->shutdown();
+					return;
 				}
 				
 				auto new_handler_ptr = handler_ptr_->get_copy();
 								
-				auto tcp_session_ptr = std::make_shared<TcpSession>(socket_ptr, option_ptr_, new_handler_ptr, local_addr_);
+				auto tcp_session_ptr = std::make_shared<TcpSession>(sche_, socket_ptr, option_ptr_, new_handler_ptr, local_addr_);
 				tcp_session_ptr->start();
-				sessions.emplace_back(tcp_session_ptr);
+				option_ptr_->cb_.accept_cb_(tcp_session_ptr);
 
 			}
 		}
