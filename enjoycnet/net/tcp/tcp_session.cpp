@@ -90,9 +90,6 @@ namespace enjoyc
 
 		void TcpSession::send_no_delay(const char* data, size_t len)
 		{
-			if(closed_flag_)
-				return;
-
 			boost_ec ec;
 			boost::asio::write(*socket_ptr_, boost::asio::buffer(data, len), ec);
 			if(ec)
