@@ -31,9 +31,6 @@ namespace enjoyc
 					ec = impl_->start(local_addr_, sche_, option_ptr_, handler_ptr_);
 					return ec;
 				}
-				void shutdown();
-				
-				OptionPtr get_option();
 
 				SessionHandlerPtr get_handler()
 				{

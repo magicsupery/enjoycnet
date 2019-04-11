@@ -1,6 +1,6 @@
 #include "tcp.h"
 #include "tcp_server.h"
-
+#include "tcp_client.h"
 
 namespace enjoyc
 {
@@ -15,7 +15,9 @@ namespace enjoyc
 
 		std::shared_ptr<ClientImplInterface> Tcp::create_client_impl()
 		{
-			return nullptr;
+
+			return std::static_pointer_cast<ClientImplInterface>(
+					std::make_shared<TcpClient>());
 		}
 
 		Tcp* Tcp::instance()
