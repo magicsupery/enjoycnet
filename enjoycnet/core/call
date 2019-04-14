@@ -1,12 +1,27 @@
 
 
-Acceptor<Tcp>  acc(Endpoint("127.0.0.1", 1234),
-	 [](Socket<Tcp> ns)
-		{
-			auto con_ptr = std::make_shared<Connction<Tcp> >(ns);
-		});
+HttpHandler handle;
+handler.register(xxxx);
 
-for(;;)
-{
-	acc.accpet();
-}
+GO([]{
+	Acceptor<Tcp>  acc(Endpoint("127.0.0.1", 1234),
+		 [](Socket<Tcp> ns)
+			{
+				GO([]{
+					auto con_ptr = std::make_shared<Connction<Tcp, HttpCodec> >(ns);
+
+					// read from connection
+					uint32_t n;
+					do{
+						n = con_ptr->read();
+					}while(n > 0);
+				};
+			});
+
+	for(;;)
+	{
+		acc.accpet();
+	}
+});
+
+
