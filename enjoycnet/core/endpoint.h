@@ -17,7 +17,7 @@ namespace enjoyc
 				}
 
 			public:
-				sockaddr* sockaddr()
+				struct sockaddr* sockaddr()
 				{
 					return (struct sockaddr*)&addr_;
 				}	

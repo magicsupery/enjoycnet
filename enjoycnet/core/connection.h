@@ -1,7 +1,7 @@
 #pragma once
 
 #include "socket.h"
-#include "IOContext.h"
+#include "io_context.h"
 
 namespace enjoyc
 {
@@ -11,7 +11,7 @@ namespace enjoyc
 		class Connection
 		{
 			public:
-				Connection(IoContext* io_context, Socket<Proto> socket)
+				Connection(IOContext* io_context, Socket<Proto> socket)
 				:io_context_(io_context),
 				socket_(socket),
 				sending_(false)
@@ -23,8 +23,8 @@ namespace enjoyc
 				{
 					uint32_t n = socket_.read();
 
-					uint32_t consume = codec_.parse_message(xxx);
-
+					//uint32_t consume = codec_.parse_message(xxx);
+					return n;
 				}
 
 				void write(const char*data, uint32_t len)
@@ -33,7 +33,14 @@ namespace enjoyc
 						write_in_thread(data, len);
 					else
 					{
-						io_context_->make_async_cb(std::bind<&Connection::write_in_thread, this, std::string(data, len));
+						std::string tmp(data, len);
+						io_context_->make_async_cb(
+							[=]()
+							{
+								std::string real_data(tmp);
+								write_in_thread(real_data.data(), real_data.size());
+							}
+						);
 					}
 				}
 

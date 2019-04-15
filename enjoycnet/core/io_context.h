@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ev.h>
+#include <ev++.h>
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -13,28 +13,44 @@ namespace enjoyc
 {
 	namespace net
 	{
+		
+		class IOContext;
+		class ThreadContext: public NonCopyable
+		{
+			public:
+				thread_local static IOContext* io_context_;
+				static inline IOContext* this_io_context()
+				{
+					return io_context_;
+				}
+				static void init();
+
+		};
+
 		class IOContext: public NonCopyable
 		{
-			using Function = std::function<void()>;
-			using FdMap = std::unordered_map<int, CoEvent*>;
+			public:
+				using Function = std::function<void()>;
+				using FdMap = std::unordered_map<int, CoEvent*>;
 			public:
 				IOContext()
 					:context_id_(std::this_thread::get_id())
 				{
-					ev_loop_ = EV_DEFAULT;
-					ev_init(&cb_sig_, std::bind(&IOContext::loop_async_cb, this, _1, _2);
-					ev_async_start(ev_loop_, &cb_sig_);
+					ev_loop_ = new ev::dynamic_loop();
+					
+					sign_watcher_.set(ev_loop_->raw_loop);
+					sign_watcher_.set<IOContext, &IOContext::loop_async_cb>(this);
 				}
 
 				~IOContext()
 				{
-
+					delete ev_loop_;
 				}
 
 			public:
 				inline void run()
 				{
-					ev_run(ev_loop_);
+					ev_loop_->run();
 				}
 
 				inline bool is_in_create_thread()
@@ -49,11 +65,12 @@ namespace enjoyc
 						std::lock_guard<std::mutex> lk(mutex_);
 						functions_.emplace_back(function);
 					}
-					ev_async_send (EV_DEFAULT_ &cb_sig_);
+
+					sign_watcher_.send();
 
 				}
 
-				void loop_async_cb(EV_P_ ev_async *w, int revents)
+				void loop_async_cb(ev::async &w, int revents)
 				{
 					std::vector<Function> functions;
 					{
@@ -64,6 +81,7 @@ namespace enjoyc
 					for(auto& function : functions)
 						function();
 				}
+
 
 			public:
 				inline CoEvent* get_coevent(int fd)
@@ -76,10 +94,10 @@ namespace enjoyc
 					auto co_event = new CoEvent(ev_loop_, fd);
 
 					fd_2_coevent_[fd] = co_event;
-					return co_event;
+					return;
 				}
 
-				inline destroy_coevent(fd)
+				inline void destroy_coevent(int fd)
 				{
 					auto it = fd_2_coevent_.find(fd);
 					if(it == fd_2_coevent_.end())
@@ -89,8 +107,8 @@ namespace enjoyc
 				}
 			private:
 				std::thread::id  context_id_;
-				struct ev_loop* ev_loop_;
-				ev_async cb_sig_;
+				ev::dynamic_loop* ev_loop_;
+				ev::async sign_watcher_;
 
 				std::mutex  mutex_;
 				std::vector<Function>  functions_;
@@ -99,18 +117,6 @@ namespace enjoyc
 
 		};
 
-		class ThreadContext: public NonCopyable
-		{
-			public:
-				thread_local static IOContext* io_context_;
-				inline IOContext* this_io_context()
-				{
-					return io_context_;
-				}
-				static void init();
 
-		};
-	}
-
-
-}
+	}// net
+} // enjoyc

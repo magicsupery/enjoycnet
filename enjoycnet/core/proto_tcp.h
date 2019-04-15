@@ -19,7 +19,6 @@ namespace enjoyc
 					if(not create())
 						return -1;
 
-
 					host_addr_ = ep;
 					if(::bind(fd_, host_addr_.sockaddr(), host_addr_.sockadr_size() < 0))
 						return -1;
