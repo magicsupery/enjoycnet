@@ -19,7 +19,7 @@ namespace enjoyc
 		int accept_hook(int fd, struct sockaddr* sockaddr, socklen_t* len)
 		{
 			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
-			//std::cout << "get event " << co_event << " with fd " << fd << std::endl;
+			//std::cout << "get accept event " << co_event << " with fd " << fd << std::endl;
 			co_event->wait_read();
 			int res_fd = ::accept(fd, sockaddr, len);
 			if(res_fd > 0)
@@ -32,6 +32,8 @@ namespace enjoyc
 		{
 
 			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
+
+			std::cout << "get read event " << co_event << " with fd " << fd << std::endl;
 			co_event->wait_read();
 			uint32_t read_size = 0;
 			do
@@ -44,7 +46,17 @@ namespace enjoyc
 
 		uint32_t write_hook(int fd, const char* data, uint32_t len)
 		{
-			return 0;
+
+			uint32_t write_size = 0;
+			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
+			co_event->wait_write();
+
+			do
+			{
+				write_size= ::write(fd, (void*)data, len);
+			}while(write_size < 0  and (errno == EWOULDBLOCK or errno == EINTR));
+
+			return write_size;
 		}
 	}
 }

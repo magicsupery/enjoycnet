@@ -54,6 +54,11 @@ namespace enjoyc
 					return read_hook(fd_, data, len);
 				}
 
+				uint32_t write(const char* data, uint32_t len)
+				{
+					return write_hook(fd_, data, len);
+				}
+
 			public:
 				const Endpoint& host_addr() const
 				{
@@ -76,6 +81,8 @@ namespace enjoyc
 					if(fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK) < 0)
 						return -1;
 
+					//TODO  reuse_addr reuse port
+					
 					return fd_;
 				}
 

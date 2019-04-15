@@ -93,7 +93,6 @@ namespace enjoyc
 				inline void gen_coevent(int fd)
 				{
 					auto co_event = new CoEvent(ev_loop_, fd);
-					std::cout << "gen event " << co_event << " with fd " << fd << std::endl;					
 					fd_2_coevent_[fd] = co_event;
 					return;
 				}

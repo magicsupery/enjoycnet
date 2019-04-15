@@ -2,6 +2,7 @@
 
 #include "socket.h"
 #include "io_context.h"
+#include <iostream>
 
 namespace enjoyc
 {
@@ -26,16 +27,18 @@ namespace enjoyc
 				void read()
 				{
 					uint32_t n = socket_.read(read_buffer_.data(), 1024);
-
-					uint32_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_.size());
-
+					std::cout << "connection read from socket " << n << std::endl;;		
+					uint32_t consume = codec_.parse_message(read_buffer_.data(), n);
 					
 				}
 
 				void write(const char*data, uint32_t len)
 				{
 					if(io_context_->is_in_create_thread())
+					{
+						std::cout << "wirte_in_thread" << std::endl;
 						write_in_thread(data, len);
+					}
 					else
 					{
 						std::string tmp(data, len);
@@ -49,6 +52,11 @@ namespace enjoyc
 					}
 				}
 
+				void close()
+				{
+					
+				}
+			
 			protected:
 				inline void write_in_thread(const char*data, uint32_t len)
 				{

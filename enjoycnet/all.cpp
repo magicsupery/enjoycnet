@@ -20,20 +20,37 @@ int main()
 			Acceptor<Tcp>  acc(
 					[](Socket<Tcp> ns)
 					{
-
+						std::cout << "get connection from " << ns.remote_addr() << std::endl;
 						Connection<Tcp, HttpCodec> con(ThreadContext::this_io_context(), ns,
-								[](HttpRequest const& req){});
+								[&](HttpRequest const& req){
 
-							
+								std::cout <<" read_callback " << ns.remote_addr() << std::endl;
+								HttpResponse res(rapidhttp::Response);
+
+								res.SetBody("hello world");
+
+								res.SetStatusCode(200);
+								res.SetStatus("OK");
+								res.SetField("Content-Length", std::to_string(11));
+
+								auto len = res.ByteSize();
+								char buf[len];
+								res.Serialize(buf, len);
+								con.write(buf, len);
+
+								con.close();
+								});
+
+						con.read();
 
 					});
-			
+
 			if(not acc.listen(ep, 1024))
 			{
 				std::cout << "wrong listen " << errno << std::endl;
 				return;	
 			}	
-			
+
 			while(true)
 			{
 				int res = acc.accept();
