@@ -48,7 +48,12 @@ namespace enjoyc
 
 					return res_fd;
 				}
-			
+				
+				uint32_t read(const char* data, uint32_t len)
+				{
+					return read_hook(fd_, data, len);
+				}
+
 			public:
 				const Endpoint& host_addr() const
 				{

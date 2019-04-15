@@ -26,7 +26,18 @@ namespace enjoyc
 				{
 					return proto_.accept(socket.proto_);
 				}
+				
+				uint32_t read(const char* data, uint32_t len)
+				{
+					return proto_.read(data, len);
+				}
 
+				uint32_t write(const char* data, uint32_t len)
+				{
+					return proto_.write(data, len);
+				}
+
+			public:
 				const Endpoint& host_addr() const
 				{
 					return proto_.host_addr();

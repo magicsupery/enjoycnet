@@ -20,7 +20,11 @@ int main()
 			Acceptor<Tcp>  acc(
 					[](Socket<Tcp> ns)
 					{
-						cout << "get connection from " << ns.remote_addr() << endl;
+
+						Connection<Tcp, HttpCodec> con(ThreadContext::this_io_context(), ns,
+								[](HttpRequest const& req){});
+
+							
 
 					});
 			

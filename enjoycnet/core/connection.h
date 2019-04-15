@@ -10,21 +10,26 @@ namespace enjoyc
 		template <typename Proto, typename Codec>
 		class Connection
 		{
+			typedef typename Codec::ReadCallback ReadCallback;
+
 			public:
-				Connection(IOContext* io_context, Socket<Proto> socket)
+				Connection(IOContext* io_context, Socket<Proto> socket, ReadCallback&& read_callback)
 				:io_context_(io_context),
 				socket_(socket),
+				codec_(std::forward<ReadCallback>(read_callback)),
+				read_buffer_(1024),
 				sending_(false)
 				{
-
+					
 				}
 
-				uint32_t read()
+				void read()
 				{
-					uint32_t n = socket_.read();
+					uint32_t n = socket_.read(read_buffer_.data(), 1024);
 
-					//uint32_t consume = codec_.parse_message(xxx);
-					return n;
+					uint32_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_.size());
+
+					
 				}
 
 				void write(const char*data, uint32_t len)
@@ -47,12 +52,7 @@ namespace enjoyc
 			protected:
 				inline void write_in_thread(const char*data, uint32_t len)
 				{
-
-				}
-
-				void write_in_thread(std::string& str)
-				{
-
+					uint32_t n = socket_.write(data, len);
 				}
 
 			private:
@@ -64,6 +64,7 @@ namespace enjoyc
 				std::vector<char> write_buffer_;
 
 				bool sending_;
+
 		};
 	}
 }
