@@ -4,7 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <vector>
-#include <unordered_map>
+#include <map>
+#include <iostream>
 #include "utils.h"
 #include "co_event.h"
 
@@ -31,7 +32,7 @@ namespace enjoyc
 		{
 			public:
 				using Function = std::function<void()>;
-				using FdMap = std::unordered_map<int, CoEvent*>;
+				using FdMap = std::map<int, CoEvent*>;
 			public:
 				IOContext()
 					:context_id_(std::this_thread::get_id())
@@ -92,7 +93,7 @@ namespace enjoyc
 				inline void gen_coevent(int fd)
 				{
 					auto co_event = new CoEvent(ev_loop_, fd);
-
+					std::cout << "gen event " << co_event << " with fd " << fd << std::endl;					
 					fd_2_coevent_[fd] = co_event;
 					return;
 				}

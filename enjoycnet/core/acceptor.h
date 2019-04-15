@@ -14,9 +14,8 @@ namespace enjoyc
 
 			using AcceptCallback = std::function<void (Socket<Proto> )>;
 			public:
-				Acceptor(Endpoint const& ep, AcceptCallback const& callback)
-					:host_addr_(ep),
-					callback_(callback)
+				Acceptor(AcceptCallback const& callback)
+					:callback_(callback)
 				{
 						
 				}
@@ -24,9 +23,9 @@ namespace enjoyc
 				~Acceptor() = default;
 
 			public:
-				bool listen(int backlog)
+				bool listen(Endpoint& ep, int backlog)
 				{
-					if(not socket_.listen(host_addr_, backlog))
+					if(socket_.listen(ep, backlog) < 0)
 						return false;
 					
 					return true;
@@ -35,7 +34,7 @@ namespace enjoyc
 				bool accept()
 				{
 					Socket<Proto> con_socket;
-					if(not socket_.accept(con_socket))
+					if(socket_.accept(con_socket) < 0)
 						return false;
 
 					callback_(con_socket);
@@ -43,7 +42,6 @@ namespace enjoyc
 				}
 
 			private:
-				Endpoint host_addr_;
 				Socket<Proto> socket_;
 				AcceptCallback callback_;
 		};

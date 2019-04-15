@@ -5,22 +5,23 @@
 #include <arpa/inet.h>
 #include "endpoint.h"
 #include "hook_syscall.h"
+#include <iostream>
 
 
 namespace enjoyc
 {
 	namespace net
 	{
-		class ProtoTcp
+		class Tcp
 		{
 			public:
-				int listen(Endpoint const& ep, uint32_t backlog)
+				int listen(Endpoint & ep, uint32_t backlog)
 				{
 					if(not create())
 						return -1;
 
 					host_addr_ = ep;
-					if(::bind(fd_, host_addr_.sockaddr(), host_addr_.sockadr_size() < 0))
+					if(::bind(fd_, ep.sockaddr(), ep.sockadr_size()) < 0)
 						return -1;
 
 					if(::listen(fd_, backlog) < 0)
@@ -29,18 +30,34 @@ namespace enjoyc
 					return 0;
 				}
 
-				int accept(ProtoTcp& t)
+				int accept(Tcp& t)
 				{
 					auto len = t.remote_addr_.sockadr_size();
 					int res_fd = accept_hook(fd_, t.remote_addr_.sockaddr(), &len);
 					if(res_fd < 0)
-						return -1;
+					{
+						return res_fd;
+					}
 					else
 					{
 						t.host_addr_ = host_addr_;
+						t.fd_ = res_fd;
+						t.remote_addr_.calc_ipport_from_addr();
+						
 					}
 
-					return 0;
+					return res_fd;
+				}
+			
+			public:
+				const Endpoint& host_addr() const
+				{
+					return host_addr_;
+				}
+
+				const Endpoint& remote_addr() const
+				{
+					return remote_addr_;
 				}
 
 			private:

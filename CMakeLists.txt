@@ -36,7 +36,7 @@ message("----------------------------------")
 
 # find boost
 set(Boost_USE_STATIC_LIBS   ON)
-find_package(Boost COMPONENTS system)
+find_package(Boost COMPONENTS system context)
 if(Boost_FOUND)
 else()
 	message("can not find boost, please install boost first")
@@ -44,7 +44,7 @@ else()
 endif()
 # add include and lib other project
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#link_directories(${PROJECT_SOURCE_DIR}/lib)
+link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 # add my project .h and .cpp
 include_directories(${PROJECT_SOURCE_DIR})
@@ -57,16 +57,17 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/core SRC_LIST)
 #aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/option  SRC_LIST)
 #aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/handler SRC_LIST)
 
-set(TARGET ${projectName})
-add_library(${TARGET} ${SRC_LIST})
-
-
-install(TARGETS ${TARGET} LIBRARY DESTINATION "lib" ARCHIVE DESTINATION "lib")
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/enjoycnet DESTINATION "include" FILES_MATCHING PATTERN "*.h")
-
 # add link libs
-#message(${Boost_LIBRARIES})
-#set(LINK_ARGS ${Boost_LIBRARIES} libgo gflags glog pthread dl)
-#target_link_libraries(${projectName} ${LINK_ARGS})
+add_executable(${projectName} ${SRC_LIST})
+set(LINK_ARGS ${Boost_LIBRARIES} enjoycco ev)
+target_link_libraries(${projectName} ${LINK_ARGS})
+
+#set(TARGET ${projectName})
+#add_library(${TARGET} ${SRC_LIST})
+#
+#
+#install(TARGETS ${TARGET} LIBRARY DESTINATION "lib" ARCHIVE DESTINATION "lib")
+#install(DIRECTORY ${PROJECT_SOURCE_DIR}/enjoycnet DESTINATION "include" FILES_MATCHING PATTERN "*.h")
+
 
 

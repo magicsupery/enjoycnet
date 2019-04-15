@@ -2,6 +2,7 @@
 #include "utils.h"
 #include <enjoycco/coroutine.h>
 #include <ev++.h>
+#include <assert.h>
 
 namespace enjoyc
 {
