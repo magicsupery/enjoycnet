@@ -14,6 +14,26 @@ namespace enjoyc
 	{
 		class Tcp
 		{
+			enum class TcpSocketState
+			{
+				INVALID = 0,
+				ACTIVE = 1,
+				CLOSED = 2
+			};
+
+			public:
+				Tcp()
+					:fd_(-1),
+					state_(TcpSocketState::INVALID){}
+
+				~Tcp()
+				{
+					unactive();
+				}
+
+				Tcp(Tcp const& ) = default;
+				Tcp& operator = (Tcp const&) = delete;
+
 			public:
 				int listen(Endpoint & ep, uint32_t backlog)
 				{
@@ -41,8 +61,8 @@ namespace enjoyc
 					else
 					{
 						t.host_addr_ = host_addr_;
-						t.fd_ = res_fd;
 						t.remote_addr_.calc_ipport_from_addr();
+						t.active(res_fd);
 						
 					}
 
@@ -59,6 +79,23 @@ namespace enjoyc
 					return write_hook(fd_, data, len);
 				}
 
+				void close()
+				{
+					if(state_!= TcpSocketState::CLOSED)
+					{
+						/* can not unactive when close
+						 * reason:
+						 * co_event's coroutine maybe waiting,
+						 * should call close to trig the coroutine wakeup
+						 * The unactive time is this socket owner dtor(destructor)
+						 * 
+						*/
+						::shutdown(fd_, SHUT_RDWR);
+						::close(fd_);
+						state_ = TcpSocketState::CLOSED;
+					}
+				}
+
 			public:
 				const Endpoint& host_addr() const
 				{
@@ -73,23 +110,49 @@ namespace enjoyc
 			private:
 				int create()
 				{
-					fd_ = socket_hook(AF_INET, SOCK_STREAM, 0);
-					if(fd_ <= 0)
+					int fd = ::socket(AF_INET, SOCK_STREAM, 0);
+
+					std::cout << "create fd " << fd;
+					if(fd <= 0)
 						return -1;
 
 					// non-blocking
-					if(fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK) < 0)
+					if(fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0)
 						return -1;
 
 					//TODO  reuse_addr reuse port
 					
-					return fd_;
+					active(fd);
+					return fd;
+				}
+			
+			private:
+				// active&unactive co_event
+				void active(int fd)
+				{
+					fd_ = fd;
+					state_ = TcpSocketState::ACTIVE;
+					ThreadContext::this_io_context()->gen_coevent(fd_);
+
+					std::cout << "active fd is " << fd_ <<std::endl;
+				}	
+
+				void unactive()
+				{
+					//if the state is not CLOSED,
+					//has no right to destroy_coevent
+					if(state_ != TcpSocketState::CLOSED)
+						return;
+					
+					ThreadContext::this_io_context()->destroy_coevent(fd_);
+
 				}
 
 			private:
 				Endpoint host_addr_;
 				Endpoint remote_addr_;
 				int fd_;
+				TcpSocketState state_;
 		};
 	}
 }

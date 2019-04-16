@@ -1,6 +1,7 @@
 #pragma once
 #include "utils.h"
 #include <enjoycco/coroutine.h>
+#include <utility>
 #include <ev++.h>
 #include <assert.h>
 
@@ -26,7 +27,10 @@ namespace enjoyc
 
 				~CoEvent()
 				{
+					assert(read_co_ == nullptr and write_co_ == nullptr);
 
+					read_wathcer_.stop();
+					write_wathcer_.stop();
 				}
 
 			public:
@@ -51,13 +55,15 @@ namespace enjoyc
 				void read_cb(ev::io &w, int revents)
 				{
 					read_wathcer_.stop();
-					read_co_->start();
+					auto co = std::exchange(read_co_, nullptr);
+					co->start();
 				}
 
 				void write_cb(ev::io &w, int revents)
 				{
 					write_wathcer_.stop();
-					write_co_->start();
+					auto co = std::exchange(write_co_, nullptr);
+					co->start();
 				}
 
 			private:

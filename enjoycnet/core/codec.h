@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <rapidhttp/rapidhttp.h>
-#include <iostream>
+#include <glog/logging.h>
 
 namespace enjoyc
 {
@@ -25,9 +25,8 @@ namespace enjoyc
 				uint32_t parse_message(const char* data, uint32_t len)
 				{
 
-					std::cout << "parse message len  " << len << std::endl;
 					auto handled = request_.PartailParse(data, len);
-					std::cout << "parse message handled " << handled << std::endl;
+					DLOG(INFO) << __FUNCTION__ << " " << this << " len " << len << " handled " << handled;
 					if(request_.ParseDone())
 					{
 						read_callback_(request_);

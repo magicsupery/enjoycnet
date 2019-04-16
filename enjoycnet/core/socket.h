@@ -37,6 +37,11 @@ namespace enjoyc
 					return proto_.write(data, len);
 				}
 
+				void close()
+				{
+					return proto_.close();
+				}
+
 			public:
 				const Endpoint& host_addr() const
 				{

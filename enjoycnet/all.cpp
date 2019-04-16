@@ -8,20 +8,25 @@
 #include <enjoycco/coroutine.h>
 
 #include <iostream>
+#include <glog/logging.h>
 
 using namespace enjoyc::net;
 using namespace std;
-int main()
+int main(int , char** argv)
 {
+	::google::InitGoogleLogging(argv[0]);
+	::google::LogToStderr();
+	DLOG(INFO) << __FUNCTION__ ;
 	ThreadContext::init();
 
 	enjoyc::co::Coroutine s([]{
 			Endpoint ep("0.0.0.0", 1234);
 			Acceptor<Tcp>  acc(
-					[](Socket<Tcp> ns)
+					[](Socket<Tcp> const& ns)
 					{
 						std::cout << "get connection from " << ns.remote_addr() << std::endl;
-						Connection<Tcp, HttpCodec> con(ThreadContext::this_io_context(), ns,
+						std::shared_ptr<Connection<Tcp, HttpCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpCodec>>
+								(ThreadContext::this_io_context(), ns,
 								[&](HttpRequest const& req){
 
 								std::cout <<" read_callback " << ns.remote_addr() << std::endl;
@@ -36,12 +41,17 @@ int main()
 								auto len = res.ByteSize();
 								char buf[len];
 								res.Serialize(buf, len);
-								con.write(buf, len);
+								con_ptr->write(buf, len);
 
-								con.close();
+								con_ptr->close();
 								});
+						
+						bool ret;
+						do{
+							ret = con_ptr->read();
+						}while(ret);
 
-						con.read();
+						DLOG(INFO) << "end connection " << ns.remote_addr();
 
 					});
 

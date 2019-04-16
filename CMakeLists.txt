@@ -59,7 +59,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/core SRC_LIST)
 
 # add link libs
 add_executable(${projectName} ${SRC_LIST})
-set(LINK_ARGS ${Boost_LIBRARIES} enjoycco ev)
+set(LINK_ARGS ${Boost_LIBRARIES} enjoycco ev glog)
 target_link_libraries(${projectName} ${LINK_ARGS})
 
 #set(TARGET ${projectName})

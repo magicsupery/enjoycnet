@@ -9,23 +9,12 @@ namespace enjoyc
 {
 	namespace net
 	{		
-		int socket_hook(int family, int type, int protocol)
-		{
-			int fd = socket(family, type, protocol);
-			ThreadContext::this_io_context()->gen_coevent(fd);
-			return fd;
-		}
-
 		int accept_hook(int fd, struct sockaddr* sockaddr, socklen_t* len)
 		{
 			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
 			//std::cout << "get accept event " << co_event << " with fd " << fd << std::endl;
 			co_event->wait_read();
-			int res_fd = ::accept(fd, sockaddr, len);
-			if(res_fd > 0)
-				ThreadContext::this_io_context()->gen_coevent(res_fd);
-
-			return res_fd;
+			return ::accept(fd, sockaddr, len);
 		}
 
 		uint32_t read_hook(int fd, const char* data, uint32_t len)
@@ -58,5 +47,6 @@ namespace enjoyc
 
 			return write_size;
 		}
+
 	}
 }

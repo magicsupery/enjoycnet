@@ -12,9 +12,9 @@ namespace enjoyc
 		class Acceptor
 		{
 
-			using AcceptCallback = std::function<void (Socket<Proto> )>;
+			using AcceptCallback = std::function<void (Socket<Proto> const&)>;
 			public:
-				Acceptor(AcceptCallback const& callback)
+				Acceptor(AcceptCallback && callback)
 					:callback_(callback)
 				{
 						

@@ -97,14 +97,19 @@ namespace enjoyc
 					return;
 				}
 
-				inline void destroy_coevent(int fd)
+				inline CoEvent* destroy_coevent(int fd)
 				{
 					auto it = fd_2_coevent_.find(fd);
 					if(it == fd_2_coevent_.end())
-						return;
-
+						return nullptr;
+					
+					auto res = it->second;
 					fd_2_coevent_.erase(it);
+
+					delete res;
+					return res;
 				}
+
 			private:
 				std::thread::id  context_id_;
 				ev::dynamic_loop* ev_loop_;
