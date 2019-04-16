@@ -1,11 +1,13 @@
 #pragma once
 
-#include <ev++.h>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <map>
-#include <iostream>
+
+#include <ev++.h>
+#include <enjoycco/coroutine.h>
+
 #include "utils.h"
 #include "co_event.h"
 
@@ -109,7 +111,7 @@ namespace enjoyc
 					delete res;
 					return res;
 				}
-
+		
 			private:
 				std::thread::id  context_id_;
 				ev::dynamic_loop* ev_loop_;
@@ -119,6 +121,8 @@ namespace enjoyc
 				std::vector<Function>  functions_;
 
 				FdMap fd_2_coevent_;
+
+				std::vector<co::Coroutine*> coroutines_;
 
 		};
 

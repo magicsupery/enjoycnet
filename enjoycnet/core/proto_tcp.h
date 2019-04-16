@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 #include "endpoint.h"
 #include "hook_syscall.h"
-#include <iostream>
 
 
 namespace enjoyc
@@ -112,16 +111,25 @@ namespace enjoyc
 				{
 					int fd = ::socket(AF_INET, SOCK_STREAM, 0);
 
-					std::cout << "create fd " << fd;
 					if(fd <= 0)
 						return -1;
 
 					// non-blocking
 					if(fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0)
+					{
+						::close(fd);
 						return -1;
+					}
 
 					//TODO  reuse_addr reuse port
-					
+					int option = 1;
+					if(::setsockopt(fd, SOL_SOCKET, (SO_REUSEADDR | SO_REUSEPORT), 
+						(char*)&option, sizeof(option)) < 0)
+					{
+						::close(fd);
+						return -1;
+					}
+
 					active(fd);
 					return fd;
 				}
@@ -133,8 +141,6 @@ namespace enjoyc
 					fd_ = fd;
 					state_ = TcpSocketState::ACTIVE;
 					ThreadContext::this_io_context()->gen_coevent(fd_);
-
-					std::cout << "active fd is " << fd_ <<std::endl;
 				}	
 
 				void unactive()

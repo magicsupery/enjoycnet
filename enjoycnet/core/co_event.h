@@ -38,6 +38,7 @@ namespace enjoyc
 				void wait_read()
 				{
 					ASSERT_IN_COROUTINE;
+					assert(read_co_ == nullptr);
 					read_wathcer_.start();
 					read_co_ = co::CoroutineContext::this_coroutine();
 					CO_YIELD;
@@ -47,6 +48,8 @@ namespace enjoyc
 				{
 
 					ASSERT_IN_COROUTINE;
+					assert(write_co_ == nullptr);
+					read_wathcer_.start();
 					write_wathcer_.start();
 					write_co_ = co::CoroutineContext::this_coroutine();
 					CO_YIELD;
@@ -54,6 +57,7 @@ namespace enjoyc
 				// cb from libev
 				void read_cb(ev::io &w, int revents)
 				{
+					assert(read_co_ != nullptr);
 					read_wathcer_.stop();
 					auto co = std::exchange(read_co_, nullptr);
 					co->start();
@@ -61,6 +65,8 @@ namespace enjoyc
 
 				void write_cb(ev::io &w, int revents)
 				{
+
+					assert(write_co_ != nullptr);
 					write_wathcer_.stop();
 					auto co = std::exchange(write_co_, nullptr);
 					co->start();

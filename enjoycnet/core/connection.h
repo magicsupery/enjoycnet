@@ -64,7 +64,6 @@ namespace enjoyc
 					}
 
 					uint32_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_pos_ + n);
-
 					read_buffer_pos_ = read_buffer_pos_ + n - consume;
 					if(consume > 0)
 					{
