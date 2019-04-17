@@ -4,6 +4,7 @@
 #include <mutex>
 #include <vector>
 #include <map>
+#include <unordered_set>
 
 #include <ev++.h>
 #include <enjoycco/coroutine.h>
@@ -30,10 +31,10 @@ namespace enjoyc
 
 		};
 
+		using Function = std::function<void()>;
 		class IOContext: public NonCopyable
 		{
 			public:
-				using Function = std::function<void()>;
 				using FdMap = std::map<int, CoEvent*>;
 			public:
 				IOContext()
@@ -112,6 +113,23 @@ namespace enjoyc
 					return res;
 				}
 		
+			public:
+				co::Coroutine* generate_coroutine(Function&& f)
+				{
+					auto co = new co::Coroutine(std::move(f));
+					coroutines_.insert(co);
+					return co;
+				}		
+
+				void destroy_coroutine(co::Coroutine* co)
+				{
+					auto it = coroutines_.find(co);
+					if(it != coroutines_.end())
+					{
+						delete *it;
+					}
+				}
+
 			private:
 				std::thread::id  context_id_;
 				ev::dynamic_loop* ev_loop_;
@@ -122,10 +140,26 @@ namespace enjoyc
 
 				FdMap fd_2_coevent_;
 
-				std::vector<co::Coroutine*> coroutines_;
+				std::unordered_set<co::Coroutine*> coroutines_;
 
 		};
 
+		void GO(Function&& f);
 
+		void START(co::Coroutine* co);
+		/*	
+			struct GO
+			{
+			void operator()(Function &&f)
+			{
+			auto co = ThreadContext::this_io_context()->generate_coroutine(std::move(f));
+			if(co->start()
+			== co::RetCode::ret_already_finished)
+			{
+			ThreadContext::this_io_context()->destroy_coroutine(co);
+			}
+			}
+			};
+			*/
 	}// net
 } // enjoyc
