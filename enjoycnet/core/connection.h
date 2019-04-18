@@ -58,7 +58,7 @@ namespace enjoyc
 					DLOG(INFO) << __FUNCTION__ << " " << this << "read from socket " << n;
 					if(n <= 0)
 					{
-						LOG(INFO) << __FUNCTION__ << " " << this << " read error " << errno;
+						DLOG(ERROR) << __FUNCTION__ << " " << this << " read error " << errno;
 						close();
 						return false;
 					}

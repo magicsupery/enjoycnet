@@ -13,7 +13,7 @@ namespace enjoyc
 		class HttpCodec
 		{
 			public:
-				using ReadCallback = std::function<void(HttpRequest const&)>;
+				using ReadCallback = std::function<void(HttpRequest&)>;
 			public:
 				HttpCodec(ReadCallback&& read_callback)
 					:request_(rapidhttp::Request),

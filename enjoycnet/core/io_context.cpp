@@ -1,4 +1,5 @@
 #include "io_context.h"
+#include <glog/logging.h>
 
 namespace enjoyc
 {
@@ -20,6 +21,7 @@ namespace enjoyc
 
 		void START(co::Coroutine* co)
 		{
+			DLOG(INFO) << "start co " << co;
 			if(co->start()
 					== co::RetCode::ret_already_finished)
 			{

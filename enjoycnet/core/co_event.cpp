@@ -25,7 +25,7 @@ namespace enjoyc
 		CoEvent::~CoEvent()
 		{
 			assert(read_co_ == nullptr and write_co_ == nullptr);
-
+			DLOG(INFO) << __FUNCTION__ << " " << this;
 			read_wathcer_.stop();
 			write_wathcer_.stop();
 		}
@@ -33,6 +33,7 @@ namespace enjoyc
 		void CoEvent::wait_read()
 		{
 			ASSERT_IN_COROUTINE;
+			
 			assert(read_co_ == nullptr);
 			read_wathcer_.start();
 			read_co_ = co::CoroutineContext::this_coroutine();
@@ -45,7 +46,6 @@ namespace enjoyc
 
 			ASSERT_IN_COROUTINE;
 			assert(write_co_ == nullptr);
-			read_wathcer_.start();
 			write_wathcer_.start();
 			write_co_ = co::CoroutineContext::this_coroutine();
 			CO_YIELD;
@@ -53,9 +53,10 @@ namespace enjoyc
 		// cb from libev
 		void CoEvent::read_cb(ev::io &w, int revents)
 		{
+
+			DLOG(INFO) << __FUNCTION__ << " read_co is " << read_co_ << " event is " << this;
 			assert(read_co_ != nullptr);
 
-			//DLOG(INFO) << __FUNCTION__ << " read_co is " << read_co_;
 			read_wathcer_.stop();
 			START(std::exchange(read_co_, nullptr));
 		}

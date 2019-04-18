@@ -22,33 +22,36 @@ void http_server()
 	std::vector<enjoyc::co::Coroutine> cos;
 	GO([&]{
 
-			Endpoint ep("0.0.0.0", 1234);
+			Endpoint ep("0.0.0.0", 9876);
 			Acceptor<Tcp>  acc(
 					[&](Socket<Tcp> const& ns)
 					{
 					DLOG(INFO) << "get connection from " << ns.remote_addr() << std::endl;
 
-
 					GO([&](){
 							std::shared_ptr<Connection<Tcp, HttpCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpCodec>>
 							(ThreadContext::this_io_context(), ns,
-							 [&](HttpRequest const& req){
+							 [&](HttpRequest& req){
+								 HttpResponse res(rapidhttp::Response);
 
-							 std::cout <<" read_callback " << ns.remote_addr() << std::endl;
-							 HttpResponse res(rapidhttp::Response);
+								 res.SetBody("hello world");
 
-							 res.SetBody("hello world");
+								 res.SetStatusCode(200);
+								 res.SetStatus("OK");
+								 res.SetField("Content-Length", std::to_string(11));
 
-							 res.SetStatusCode(200);
-							 res.SetStatus("OK");
-							 res.SetField("Content-Length", std::to_string(11));
+								 auto len = res.ByteSize();
+								 char buf[len];
+								 res.Serialize(buf, len);
+								 con_ptr->write(buf, len);
+								
+							 	 	 
+								 if(std::string("close").compare(
+											 req.GetField("Connection")) == 0)
+								 {
+									//con_ptr->close();		
+								 }
 
-							 auto len = res.ByteSize();
-							 char buf[len];
-							 res.Serialize(buf, len);
-							 con_ptr->write(buf, len);
-							
-							 con_ptr->close();		
 							 });
 
 							bool ret;
@@ -98,6 +101,7 @@ int main(int , char** argv)
 	{
 		threads.emplace_back(new thread(http_server));
 	}
+
 
 	for(auto thread : threads)
 		thread->join();

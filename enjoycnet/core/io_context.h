@@ -8,6 +8,7 @@
 
 #include <ev++.h>
 #include <enjoycco/coroutine.h>
+#include <glog/logging.h>
 
 #include "utils.h"
 #include "co_event.h"
@@ -116,7 +117,9 @@ namespace enjoyc
 			public:
 				co::Coroutine* generate_coroutine(Function&& f)
 				{
+
 					auto co = new co::Coroutine(std::move(f));
+					DLOG(INFO) << "generate co " << co;
 					coroutines_.insert(co);
 					return co;
 				}		
@@ -126,6 +129,7 @@ namespace enjoyc
 					auto it = coroutines_.find(co);
 					if(it != coroutines_.end())
 					{
+						DLOG(INFO) << "destroy co " << co;
 						delete *it;
 					}
 				}
