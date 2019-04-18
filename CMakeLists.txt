@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(projectName enjoycnet)
 
@@ -13,8 +14,8 @@ endif()
 
 if (UNIX)
     set(CMAKE_CXX_FLAGS "-std=c++17 -fPIC -Wall -m64 ${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g ${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
+	#set(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG}")
+	#set(CMAKE_CXX_FLAGS_RELEASE " ${CMAKE_CXX_FLAGS_RELEASE}")
 elseif (WIN32)
     # windows platform
     #add_definitions(-D_CRT_SECURE_NO_WARNINGS)
