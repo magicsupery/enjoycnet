@@ -1,95 +1,102 @@
+#include <enjoycco/coroutine.h>
+#include <enjoycnet/all.h>
+
+#include <iostream>
 #include <glog/logging.h>
-#include <libgo/coroutine.h>
-#include <enjoycnet/server.h>
-#include <enjoycnet/net/tcp/tcp_session.h>
-#include <libgo/netio/unix/reactor.h>
+#include <thread>
 
 using namespace enjoyc::net;
-using boost::system::error_code;
+using namespace std;
 
-void task(int i)
+void http_server()
 {
-	LOG(ERROR) << "before task " << i;
-	
 
-	LOG(ERROR) << "after task " << i;
+	ThreadContext::init();
+
+	std::vector<enjoyc::co::Coroutine> cos;
+	GO([&]{
+
+			Endpoint ep("0.0.0.0", 9876);
+			Acceptor<Tcp>  acc(
+					[&](Socket<Tcp> const& ns)
+					{
+					DLOG(INFO) << "get connection from " << ns.remote_addr() << std::endl;
+
+					GO([&](){
+							std::shared_ptr<Connection<Tcp, HttpCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpCodec>>
+							(ThreadContext::this_io_context(), ns,
+							 [&](HttpRequest& req){
+
+							 HttpResponse res(rapidhttp::Response);
+
+							 res.SetBody("hello world");
+
+							 res.SetStatusCode(200);
+							 res.SetStatus("OK");
+							 res.SetField("Content-Length", std::to_string(11));
+
+							 auto len = res.ByteSize();
+							 char buf[len];
+							 res.Serialize(buf, len);
+
+							 con_ptr->write(buf, len);
+
+
+							 if(std::string("close").compare(
+										 req.GetField("Connection")) == 0)
+							 {
+								 con_ptr->close();		
+							 }
+
+							 });
+
+							bool ret;
+							do{
+								ret = con_ptr->read();
+							}while(ret);
+							DLOG(INFO) << "end connection from " << ns.remote_addr() << std::endl;
+					});
+					});
+
+			if(not acc.listen(ep, 4096))
+			{
+				return;	
+			}	
+
+			while(true)
+			{
+				bool res = acc.accept();
+				if(not res)
+				{
+					if(errno == EINTR or errno == EWOULDBLOCK or
+							errno == ECONNABORTED or errno == EPROTO)
+					{
+						continue;
+					}
+					else
+					{
+						LOG(ERROR) << "wrong accept " << errno << std::endl;
+					}
+				}
+			}
+
+	});
+
+		ThreadContext::this_io_context()->run();
 }
-
-void accept()
+int main(int , char** argv)
 {
-	int i = 0;
-	for(; i < 100; i++)
+	::google::InitGoogleLogging(argv[0]);
+	::google::LogToStderr();
+	DLOG(INFO) << __FUNCTION__ << " start";
+	vector<thread*> threads;
+	for(size_t i = 0; i < 8; i++)
 	{
-		go [i]{task(i);};
+		threads.emplace_back(new thread(http_server));
 	}
 
-}
-
-
-using Sessions =  std::set<SessionEntry>;
-void init_server(Scheduler* sche)
-{
-	Sessions sessions;
-	boost_ec ec;
-
-	Option ops;
-	ops.cb_.accept_cb_ = [&](SessionEntry const& s){
-		sessions.insert(s);
-	};
-	ops.cb_.dis_cb_= [&](SessionEntry const& s){
-		sessions.erase(s);
-	};
-	Server<Tcp, HttpHandler> s(Endpoint::generate("0.0.0.0", 9876, ec),
-			sche, &ops);
-
-	auto handler = std::static_pointer_cast<HttpHandler>(s.get_handler());
-
-	auto http_router_ptr = std::make_shared<HttpRouter>();
-
-	http_router_ptr->register_handler("GET", "/test",
-		   	[](rapidhttp::HttpDocumentRef& req, rapidhttp::HttpDocument& res)-> bool{
-				res.SetBody("hello world");
-				return true;
-			});
-
-
-	http_router_ptr->register_handler("POST", "/test",
-		   	[](rapidhttp::HttpDocumentRef& req, rapidhttp::HttpDocument& res) -> bool{
-				res.SetBody("post test");
-				return true;
-			});
-
-	handler->set_router_ptr(http_router_ptr);
-	if(ec)
-	{
-		std::cout << "parse wrong with " << ec.message() << std::endl;
-		return;
-	}
-	
-	ec = s.start();
-	if(ec)
-	{
-		std::cout << "start wrong with " << ec.message() << std::endl;
-		return;
-	}
-
-	sche->Start(1, 1);
-}
-
-int main(int argc, char** argv)
-{
-	google::InitGoogleLogging(argv[0]);
-	
-	std::vector<std::thread* > threads;
-	std::vector<Scheduler*>	 sches;
-	for(size_t i = 0; i < std::thread::hardware_concurrency(); i++)	
-	{
-		Scheduler* sche = Scheduler::Create();
-		threads.emplace_back(new std::thread(init_server, sche));
-		sches.emplace_back(sche);
-	}
-
-	for(auto& thread : threads)
+	for(auto thread : threads)
 		thread->join();
 
+	DLOG(INFO) << __FUNCTION__ << " done";
 }

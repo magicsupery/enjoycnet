@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.2)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if (CMAKE_BUILD_TYPE)
 else()
-	set(CMAKE_BUILD_TYPE RELEASE)
+	set(CMAKE_BUILD_TYPE RelWithDebInfo)
 	#set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
 
 if (UNIX)
     set(CMAKE_CXX_FLAGS "-std=c++17 -fPIC -Wall -m64 ${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g ${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 elseif (WIN32)
     # windows platform
     #add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -32,7 +31,7 @@ message("----------------------------------")
 
 # find boost
 set(Boost_USE_STATIC_LIBS   ON)
-find_package(Boost COMPONENTS system regex)
+find_package(Boost COMPONENTS system context)
 if(Boost_FOUND)
 else()
 	message("can not find boost, please install boost first")
@@ -44,22 +43,13 @@ link_directories(${PROJECT_SOURCE_DIR}/../lib)
 
 aux_source_directory(${PROJECT_SOURCE_DIR} SRC_LIST)
 
-# find boost
-set(Boost_USE_STATIC_LIBS   ON)
-find_package(Boost COMPONENTS system regex)
-if(Boost_FOUND)
-else()
-	message("can not find boost, please install boost first")
-	EXIT()	
-endif()
-
-set(LINK_ARGS ${Boost_LIBRARIES} libgo enjoycnet glog pthread dl)
-
+set(LINK_ARGS enjoycnet enjoycco ev glog ${Boost_LIBRARIES})
+message(" Link args is ${LINK_ARGS} ")
 foreach(var ${SRC_LIST})
 	string(REGEX REPLACE ".*/" "" var ${var})
 	string(REGEX REPLACE ".cpp" "" tgt ${var})
 
 	set(target ${tgt}.t)
 	add_executable(${target} ${var})
-	target_link_libraries(${target} ${LINK_ARGS} rt)
+	target_link_libraries(${target} ${LINK_ARGS})
 endforeach(var)

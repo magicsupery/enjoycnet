@@ -7,8 +7,8 @@ project(${projectName})
 
 if (CMAKE_BUILD_TYPE)
 else()
-	#set(CMAKE_BUILD_TYPE RELEASE)
-	set(CMAKE_BUILD_TYPE DEBUG)
+	set(CMAKE_BUILD_TYPE RelWithDebInfo)
+	#set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
 
@@ -52,23 +52,16 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet SRC_LIST)
 aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/core SRC_LIST)
-#aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/abstract SRC_LIST)
-#aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/net SRC_LIST)
-#aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/net/tcp SRC_LIST)
-#aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/option  SRC_LIST)
-#aux_source_directory(${PROJECT_SOURCE_DIR}/enjoycnet/handler SRC_LIST)
 
 # add link libs
-add_executable(${projectName} ${SRC_LIST})
-set(LINK_ARGS ${Boost_LIBRARIES} enjoycco ev glog)
-target_link_libraries(${projectName} ${LINK_ARGS})
+#add_executable(${projectName} ${SRC_LIST})
+#set(LINK_ARGS ${Boost_LIBRARIES} enjoycco ev glog)
+#target_link_libraries(${projectName} ${LINK_ARGS})
 
-#set(TARGET ${projectName})
-#add_library(${TARGET} ${SRC_LIST})
-#
-#
-#install(TARGETS ${TARGET} LIBRARY DESTINATION "lib" ARCHIVE DESTINATION "lib")
-#install(DIRECTORY ${PROJECT_SOURCE_DIR}/enjoycnet DESTINATION "include" FILES_MATCHING PATTERN "*.h")
+set(TARGET ${projectName})
+add_library(${TARGET} ${SRC_LIST} )
+install(TARGETS ${TARGET} LIBRARY DESTINATION "lib" ARCHIVE DESTINATION "lib")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/enjoycnet DESTINATION "include" FILES_MATCHING PATTERN "*.h")
 
 
 
