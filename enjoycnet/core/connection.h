@@ -14,9 +14,15 @@ namespace enjoyc
 		constexpr int S_WRITE = 0x0002;
 		constexpr int S_CLOSE = 0x0004;
 		
-		constexpr int READ_BUFFER_SIZE = 1024 * 128;
-		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 1024;
-		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 1024 * 8;
+		constexpr int READ_BUFFER_SIZE = 1024 * 8;
+		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 32;
+		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 128;
+
+		
+		constexpr int WRITE_BUFFER_SIZE = 1024 * 8;
+		constexpr int WRITE_BUFFER_SHRINK_SIZE = 1024 * 32;
+		constexpr int WRITE_BUFFER_MAX_SIZE_LIMIT = 1024 * 128;
+		constexpr int WRITE_ONCE_MAX_SIZE = 1024;
 
 		template <typename Proto, typename Codec>
 		class Connection : public std::enable_shared_from_this<Connection<Proto, Codec> >
@@ -29,8 +35,10 @@ namespace enjoyc
 				:io_context_(io_context),
 				socket_(socket),
 				codec_(std::forward<ReadCallback>(read_callback)),
-				read_buffer_(1024),
+				read_buffer_(READ_BUFFER_SIZE),
 				read_buffer_pos_(0),
+				write_buffer_(WRITE_BUFFER_SIZE),
+				write_buffer_pos_(0),
 				state_(0x0000)
 				{
 					DLOG(INFO) << __FUNCTION__ << " " << this;
@@ -145,11 +153,29 @@ namespace enjoyc
 					
 					if((state_ & S_WRITE) != 0)
 					{
-						//write to the buffer
-						return;	
+						if(not write_to_buffer(data, len))
+						{
+							close();
+						}
+
+						return;
 					}
 
 					state_ |= S_WRITE;
+
+					// once send size 
+					if(len > WRITE_ONCE_MAX_SIZE)
+					{
+						auto write_size = len - WRITE_ONCE_MAX_SIZE;
+						if(not write_to_buffer(data + WRITE_ONCE_MAX_SIZE, write_size))
+						{
+							close();
+							return;
+						}
+
+						len = WRITE_ONCE_MAX_SIZE;
+					}
+					
 					ssize_t n = socket_.write(data, len);
 					if(n <=0)
 					{
@@ -158,6 +184,19 @@ namespace enjoyc
 					}
 
 					//not write clean or write_buffer has data
+					while(n != len or write_buffer_pos_ > 0)
+					{
+						uint32_t left_len = len - n;
+						uint32_t buffer_len = std::min((unsigned int)WRITE_ONCE_MAX_SIZE - left_len, write_buffer_pos_);
+						
+						char write_data[left_len + buffer_len];
+
+						(void)memcmp(&write_data[0], data + n, left_len);
+						read_from_buffer(&write_data[left_len], buffer_len);
+
+						len = left_len + buffer_len;
+						n = socket_.write((const char*)&write_data, len);
+					}
 					
 					state_ &= ~S_WRITE;
 				}
@@ -172,6 +211,40 @@ namespace enjoyc
 					socket_.close();
 				}
 
+				inline bool write_to_buffer(const char* data, uint32_t len)
+				{
+
+					//write to the buffer
+					auto buffer_len = write_buffer_.size();
+
+					//extend
+					if((buffer_len - write_buffer_pos_) < len)
+					{
+						//reach limit
+						if(buffer_len >= WRITE_BUFFER_MAX_SIZE_LIMIT)
+						{
+							LOG(ERROR) << __FUNCTION__ << " " << this << 
+								"reach write buffer limit " << WRITE_BUFFER_MAX_SIZE_LIMIT;
+							return false;
+						}
+
+						write_buffer_.resize(std::min(buffer_len * 2, (unsigned long)WRITE_BUFFER_MAX_SIZE_LIMIT));
+					}
+
+					memcpy(&write_buffer_[write_buffer_pos_], data, len);
+					
+					write_buffer_pos_ += len;
+					return true;
+				}
+
+				inline void read_from_buffer(char* data, uint32_t len)
+				{
+					memcpy(data, write_buffer_.data(), len);
+					
+					write_buffer_pos_ -= len;
+					memcpy(write_buffer_.data(), write_buffer_.data() + len, write_buffer_pos_);
+				}
+
 			private:
 				IOContext* io_context_;
 				Socket<Proto> socket_;
@@ -180,6 +253,7 @@ namespace enjoyc
 				std::vector<char> read_buffer_;
 				uint32_t read_buffer_pos_;
 				std::vector<char> write_buffer_;
+				uint32_t write_buffer_pos_;
 
 				int state_;
 
