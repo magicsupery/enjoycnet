@@ -29,6 +29,8 @@ namespace enjoyc
 					DLOG(INFO) << __FUNCTION__ << " " << this << " len " << len << " handled " << handled;
 					if(request_.ParseDone())
 					{
+
+						DLOG(INFO) << __FUNCTION__ << " " << this << " len " << len << " handled " << handled;
 						read_callback_(request_);
 						return handled;
 					}

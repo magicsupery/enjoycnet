@@ -59,6 +59,7 @@ void http_server()
 								ret = con_ptr->read();
 							}while(ret);
 							DLOG(INFO) << "end connection from " << ns.remote_addr() << std::endl;
+						std::cout << "end coroutine 2" << std::endl;
 					});
 					});
 
@@ -70,8 +71,7 @@ void http_server()
 
 			while(true)
 			{
-				int res = acc.accept();
-				DLOG(INFO) << __FUNCTION__ << " accept " << res;
+				bool res = acc.accept();
 				if(not res)
 				{
 					if(errno == EINTR or errno == EWOULDBLOCK or
@@ -85,26 +85,41 @@ void http_server()
 					}
 				}
 			}
-	});
 
-	ThreadContext::this_io_context()->run();
+			std::cout << "end http-server" << std::endl;
+	});
+	
+	while(true)
+	{
+		ThreadContext::this_io_context()->run();
+	}
 }
 int main(int , char** argv)
 {
 	::google::InitGoogleLogging(argv[0]);
 	::google::LogToStderr();
 	DLOG(INFO) << __FUNCTION__ << " start";
-
+	std::vector<char> buffer_(1024);	
+	const char* data = "afeafweafwefwefewfewfwef";
+	size_t n = 4294967295;
 	vector<thread*> threads;
+	(void)memcmp(buffer_.data(), data, n);
 
-	for(int i = 0; i < 20; i++)
+	for(int i = 0; i < 1; i++)
 	{
 		threads.emplace_back(new thread(http_server));
 	}
 
+	threads.emplace_back(new thread(
+				[](){
+					while(true)
+						::google::FlushLogFilesUnsafe(::google::GLOG_INFO);
+				}));
+
 
 	for(auto thread : threads)
 		thread->join();
-
+	
+	std::cout << " main done " << std::endl;	
 	DLOG(INFO) << __FUNCTION__ << " done";
 }

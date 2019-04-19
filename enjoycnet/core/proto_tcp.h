@@ -73,7 +73,7 @@ namespace enjoyc
 					return read_hook(fd_, data, len);
 				}
 
-				uint32_t write(const char* data, uint32_t len)
+				ssize_t write(const char* data, uint32_t len)
 				{
 					return write_hook(fd_, data, len);
 				}
@@ -89,7 +89,7 @@ namespace enjoyc
 						 * The unactive time is this socket owner dtor(destructor)
 						 * 
 						*/
-						::shutdown(fd_, SHUT_RDWR);
+						//::shutdown(fd_, SHUT_RDWR);
 						::close(fd_);
 						state_ = TcpSocketState::CLOSED;
 					}

@@ -14,9 +14,9 @@ namespace enjoyc
 		constexpr int S_WRITE = 0x0002;
 		constexpr int S_CLOSE = 0x0004;
 		
-		constexpr int READ_BUFFER_SIZE = 1024 * 128;
-		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 1024 * 2;
-		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 1024 * 8;
+		constexpr int READ_BUFFER_SIZE = 1024 * 4;
+		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 16;
+		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 128;
 
 		template <typename Proto, typename Codec>
 		class Connection : public std::enable_shared_from_this<Connection<Proto, Codec> >
@@ -40,7 +40,7 @@ namespace enjoyc
 				{
 					DLOG(INFO) << __FUNCTION__ << " " << this;
 				}
-
+				
 				bool read()
 				{
 					//close return
@@ -52,7 +52,7 @@ namespace enjoyc
 					assert((state_ & S_READ) == 0 and io_context_->is_in_create_thread());
 					state_ |= S_READ;
 					uint32_t read_buffer_size = read_buffer_.size();
-					uint32_t n = socket_.read(&read_buffer_[read_buffer_pos_],
+					size_t n = socket_.read(&read_buffer_[read_buffer_pos_],
 							 read_buffer_size - read_buffer_pos_);
 					
 					DLOG(INFO) << __FUNCTION__ << " " << this << "read from socket " << n;
@@ -65,12 +65,15 @@ namespace enjoyc
 
 					uint32_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_pos_ + n);
 					read_buffer_pos_ = read_buffer_pos_ + n - consume;
+
+					DLOG(INFO) << __FUNCTION__ << " " << this <<" 1";
 					if(consume > 0)
 					{
 						memcmp(read_buffer_.data(),&read_buffer_[read_buffer_pos_],
 								read_buffer_pos_);
 					}	
 					
+					DLOG(INFO) << __FUNCTION__ << " " << this <<" 2";
 					state_ &= ~S_READ;
 
 					//extend	
@@ -139,8 +142,18 @@ namespace enjoyc
 				{
 					if((state_ & S_CLOSE) != 0)
 						return;
+					
+					if((state_ & S_WRITE) != 0)
+					{
+						//write to the buffer
+						return;	
+					}
 
+					state_ |= S_WRITE;
 					uint32_t n = socket_.write(data, len);
+					//not write clean or write_buffer has data
+					
+					state_ &= ~S_WRITE;
 				}
 
 				inline void close_in_thread()

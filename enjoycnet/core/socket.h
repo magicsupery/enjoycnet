@@ -27,12 +27,12 @@ namespace enjoyc
 					return proto_.accept(socket.proto_);
 				}
 				
-				uint32_t read(const char* data, uint32_t len)
+				ssize_t read(const char* data, uint32_t len)
 				{
 					return proto_.read(data, len);
 				}
 
-				uint32_t write(const char* data, uint32_t len)
+				ssize_t write(const char* data, uint32_t len)
 				{
 					return proto_.write(data, len);
 				}
