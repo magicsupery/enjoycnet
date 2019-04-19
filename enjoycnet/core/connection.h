@@ -14,9 +14,9 @@ namespace enjoyc
 		constexpr int S_WRITE = 0x0002;
 		constexpr int S_CLOSE = 0x0004;
 		
-		constexpr int READ_BUFFER_SIZE = 1024 * 4;
-		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 16;
-		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 128;
+		constexpr int READ_BUFFER_SIZE = 1024 * 128;
+		constexpr int READ_BUFFER_SHRINK_SIZE = 1024 * 1024;
+		constexpr int READ_BUFFER_MAX_SIZE_LIMIT = 1024 * 1024 * 8;
 
 		template <typename Proto, typename Codec>
 		class Connection : public std::enable_shared_from_this<Connection<Proto, Codec> >
@@ -52,7 +52,7 @@ namespace enjoyc
 					assert((state_ & S_READ) == 0 and io_context_->is_in_create_thread());
 					state_ |= S_READ;
 					uint32_t read_buffer_size = read_buffer_.size();
-					size_t n = socket_.read(&read_buffer_[read_buffer_pos_],
+					ssize_t n = socket_.read(&read_buffer_[read_buffer_pos_],
 							 read_buffer_size - read_buffer_pos_);
 					
 					DLOG(INFO) << __FUNCTION__ << " " << this << "read from socket " << n;
@@ -150,7 +150,13 @@ namespace enjoyc
 					}
 
 					state_ |= S_WRITE;
-					uint32_t n = socket_.write(data, len);
+					ssize_t n = socket_.write(data, len);
+					if(n <=0)
+					{
+						close();
+						return;
+					}
+
 					//not write clean or write_buffer has data
 					
 					state_ &= ~S_WRITE;

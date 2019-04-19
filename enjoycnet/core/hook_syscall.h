@@ -27,7 +27,7 @@ namespace enjoyc
 			ssize_t read_size = 0;
 			do
 			{
-				read_size = ::read(fd, (void*)data, len);
+				read_size = ::recv(fd, (void*)data, len, MSG_NOSIGNAL);
 			}while(read_size < 0  and (errno == EWOULDBLOCK or errno == EINTR));
 			
 			DLOG(INFO) << __FUNCTION__ << " co_event " << co_event <<" with fd " << fd << " size is " << read_size;
@@ -41,7 +41,8 @@ namespace enjoyc
 			//try to syswrite first
 			do{
 
-				write_size= ::write(fd, (void*)data, len);
+				write_size= ::send(fd, (void*)data, len, MSG_NOSIGNAL);
+
 			}while(write_size < 0  and (errno == EINTR));
 			if(write_size >= 0)
 			{
@@ -55,7 +56,7 @@ namespace enjoyc
 
 			do
 			{
-				write_size= ::write(fd, (void*)data, len);
+				write_size= ::send(fd, (void*)data, len, MSG_NOSIGNAL);
 			}while(write_size < 0  and (errno == EWOULDBLOCK or errno == EINTR));
 
 			return write_size;

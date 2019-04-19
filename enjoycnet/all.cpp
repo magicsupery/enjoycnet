@@ -32,25 +32,27 @@ void http_server()
 							std::shared_ptr<Connection<Tcp, HttpCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpCodec>>
 							(ThreadContext::this_io_context(), ns,
 							 [&](HttpRequest& req){
-								 HttpResponse res(rapidhttp::Response);
 
-								 res.SetBody("hello world");
+							 HttpResponse res(rapidhttp::Response);
 
-								 res.SetStatusCode(200);
-								 res.SetStatus("OK");
-								 res.SetField("Content-Length", std::to_string(11));
+							 res.SetBody("hello world");
 
-								 auto len = res.ByteSize();
-								 char buf[len];
-								 res.Serialize(buf, len);
-								 con_ptr->write(buf, len);
-								
-							 	 	 
-								 if(std::string("close").compare(
-											 req.GetField("Connection")) == 0)
-								 {
-									//con_ptr->close();		
-								 }
+							 res.SetStatusCode(200);
+							 res.SetStatus("OK");
+							 res.SetField("Content-Length", std::to_string(11));
+
+							 auto len = res.ByteSize();
+							 char buf[len];
+							 res.Serialize(buf, len);
+
+							 con_ptr->write(buf, len);
+
+
+							 if(std::string("close").compare(
+										 req.GetField("Connection")) == 0)
+							 {
+								 //con_ptr->close();		
+							 }
 
 							 });
 
@@ -59,7 +61,7 @@ void http_server()
 								ret = con_ptr->read();
 							}while(ret);
 							DLOG(INFO) << "end connection from " << ns.remote_addr() << std::endl;
-						std::cout << "end coroutine 2" << std::endl;
+							std::cout << "end coroutine 2" << std::endl;
 					});
 					});
 
@@ -88,7 +90,7 @@ void http_server()
 
 			std::cout << "end http-server" << std::endl;
 	});
-	
+
 	while(true)
 	{
 		ThreadContext::this_io_context()->run();
@@ -112,14 +114,14 @@ int main(int , char** argv)
 
 	threads.emplace_back(new thread(
 				[](){
-					while(true)
-						::google::FlushLogFilesUnsafe(::google::GLOG_INFO);
+				while(true)
+				::google::FlushLogFilesUnsafe(::google::GLOG_INFO);
 				}));
 
 
 	for(auto thread : threads)
 		thread->join();
-	
+
 	std::cout << " main done " << std::endl;	
 	DLOG(INFO) << __FUNCTION__ << " done";
 }
