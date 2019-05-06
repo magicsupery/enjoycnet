@@ -22,10 +22,10 @@ void http_server()
 					DLOG(INFO) << "get connection from " << ns.remote_addr() << std::endl;
 
 					GO([&](){
-							std::shared_ptr<Connection<Tcp, HttpCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpCodec>>
+							std::shared_ptr<Connection<Tcp, HttpServerCodec>> con_ptr = std::make_shared<Connection<Tcp, HttpServerCodec>>
 							(ThreadContext::this_io_context(), ns,
 							 [&](HttpRequest& req){
-
+							 DLOG(INFO) << "handle req ";
 							 HttpResponse res(rapidhttp::Response);
 
 							 res.SetBody("hello world");
@@ -40,7 +40,7 @@ void http_server()
 
 							 con_ptr->write(buf, len);
 
-
+							 DLOG(INFO) << "connection filed is " << req.GetField("Connection").c_str();
 							 if(std::string("close").compare(
 										 req.GetField("Connection")) == 0)
 							 {

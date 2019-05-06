@@ -15,13 +15,35 @@ void http_client()
 	GO([&]{
 		Endpoint ep("0.0.0.0", 9876);
 		
-		Connector<Tcp> connector([](Socket<Tcp> const& socket){
-			GO([&](){
-				Socket<Tcp> mysocket(socket);
-				DLOG(INFO) << "connect to " << mysocket.remote_addr();
-				mysocket.close();
-					});
+		Connector<Tcp> connector([](Socket<Tcp> const& ns){
+				GO([&](){
+						std::shared_ptr<Connection<Tcp, HttpClientCodec>> con_ptr
+						= std::make_shared<Connection<Tcp, HttpClientCodec>>
+						(ThreadContext::this_io_context(), ns,
+						 [&](HttpResponse& res){
+						 	DLOG(INFO) << "read HttpResponse " << res.GetBody().c_str();
+						 });
+						
+						auto remote_addr = ns.remote_addr();	
+						HttpRequest req(rapidhttp::Request);
+						req.SetUri("/test");
+						req.SetMethod("GET");
+						//req.SetField("Connection", "close\r\n");
+						req.SetField("Accept", "text\r\n");
+
+						auto len = req.ByteSize();
+						DLOG(INFO) << "len " << len;
+						char buf[len];
+						req.Serialize(buf, len);
+						con_ptr->write(buf, len);
+
+						bool ret;
+						do{
+						ret = con_ptr->read();
+						}while(ret);
+						DLOG(INFO) << "end connection from " << remote_addr << std::endl;
 				});
+		});
 
 		connector.connect(ep);
 
