@@ -16,6 +16,15 @@ namespace enjoyc
 			co_event->wait_read();
 			return ::accept(fd, sockaddr, len);
 		}
+		
+		int connect_hook(int fd, struct sockaddr* sockaddr, socklen_t len)
+		{
+
+			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
+			DLOG(INFO) << __FUNCTION__ << " co_event " << co_event <<" with fd " << fd;
+			co_event->wait_write();
+			return ::connect(fd, sockaddr, len);
+		}
 
 		ssize_t read_hook(int fd, const char* data, uint32_t len)
 		{

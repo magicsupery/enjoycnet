@@ -27,6 +27,11 @@ namespace enjoyc
 					return proto_.accept(socket.proto_);
 				}
 				
+				int connect(Endpoint & ep)
+				{
+					return proto_.connect(ep);
+				}
+
 				ssize_t read(const char* data, uint32_t len)
 				{
 					return proto_.read(data, len);
@@ -37,7 +42,7 @@ namespace enjoyc
 					return proto_.write(data, len);
 				}
 
-				void close()
+				void close() 
 				{
 					return proto_.close();
 				}

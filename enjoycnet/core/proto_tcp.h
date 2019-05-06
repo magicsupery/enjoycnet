@@ -48,7 +48,19 @@ namespace enjoyc
 
 					return 0;
 				}
-
+				
+				int connect(Endpoint & ep)
+				{
+					if(not create())
+						return -1;
+					
+					remote_addr_ = ep;
+					auto len = remote_addr_.sockadr_size();
+					if(connect_hook(fd_, remote_addr_.sockaddr(), len) < 0)
+						return -1;
+					
+					return 0;
+				}
 				int accept(Tcp& t)
 				{
 					auto len = t.remote_addr_.sockadr_size();

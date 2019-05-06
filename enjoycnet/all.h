@@ -5,4 +5,5 @@
 #include "core/acceptor.h"
 #include "core/connection.h"
 #include "core/codec.h"
+#include "core/connector.h"
 

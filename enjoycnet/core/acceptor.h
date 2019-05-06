@@ -3,13 +3,14 @@
 
 #include "socket.h"
 #include "endpoint.h"
+#include "utils.h"
 
 namespace enjoyc
 {
 	namespace net
 	{
 		template <typename Proto>
-		class Acceptor
+		class Acceptor: public NonCopyable
 		{
 
 			using AcceptCallback = std::function<void (Socket<Proto> const&)>;

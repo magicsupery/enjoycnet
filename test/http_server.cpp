@@ -13,7 +13,6 @@ void http_server()
 
 	ThreadContext::init();
 
-	std::vector<enjoyc::co::Coroutine> cos;
 	GO([&]{
 
 			Endpoint ep("0.0.0.0", 9876);
