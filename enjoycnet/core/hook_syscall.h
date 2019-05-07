@@ -1,7 +1,7 @@
 #pragma once
 
-#include <arpa/inet.h>
 
+#include "syscall.h"
 #include "io_context.h"
 #include <glog/logging.h>
 

@@ -1,11 +1,7 @@
 #pragma once
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <arpa/inet.h>
 #include "endpoint.h"
 #include "hook_syscall.h"
-
 
 namespace enjoyc
 {
@@ -121,24 +117,21 @@ namespace enjoyc
 			private:
 				int create()
 				{
-					int fd = ::socket(AF_INET, SOCK_STREAM, 0);
+					int fd = get_socket(AF_INET, SOCK_STREAM, 0);
 
 					if(fd <= 0)
 						return -1;
-
+					
 					// non-blocking
-					if(fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0)
+					if(make_socket_nonblocking(fd) < 0)
 					{
-						::close(fd);
+						close_socket(fd);
 						return -1;
 					}
 
-					//TODO  reuse_addr reuse port
-					int option = 1;
-					if(::setsockopt(fd, SOL_SOCKET, (SO_REUSEADDR | SO_REUSEPORT), 
-						(char*)&option, sizeof(option)) < 0)
+					if(make_socket_resue(fd) < 0)
 					{
-						::close(fd);
+						close_socket(fd);
 						return -1;
 					}
 
