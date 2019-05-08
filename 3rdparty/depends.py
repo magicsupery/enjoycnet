@@ -164,6 +164,8 @@ class Builder(object):
                 source_path = os.path.join(SOURCE_DIR, name)
                 if not os.path.exists(source_path):
                     run_cmd("cd %s && git clone %s %s"%(SOURCE_DIR, git_url, name))
+                    if attr.get('submodule'):
+                        run_cmd("cd %s/%s && git submodule update --init" %(SOURCE_DIR, name))
                     if attr.get('tag'):
                         run_cmd("cd %s && git checkout %s"%(source_path, attr.get("tag")))    
 

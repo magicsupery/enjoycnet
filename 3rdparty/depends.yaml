@@ -19,5 +19,8 @@ depends:
       tag: v0.4.0
       cmake_args:
           - -DWITH_GFLAGS=OFF 
+  rapidhttp:
+      git: https://github.com/magicsupery/rapidhttp.git
+      submodule: true
   #glad:
       #local: true
