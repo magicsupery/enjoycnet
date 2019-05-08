@@ -46,6 +46,7 @@ endif()
 
 # add include and lib other project
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/include)
+include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/lib)
 
 # add my project .h and .cpp
