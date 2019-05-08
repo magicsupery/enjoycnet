@@ -1,0 +1,23 @@
+source: source
+build: build
+install: install
+
+cmake_args:
+  - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  # - -DCMAKE_BUILD_TYPE=Debug
+  
+depends:
+  ninja: # must
+    git: https://github.com/ninja-build/ninja
+    tag: v1.9.0
+  enjoycco:
+      git: https://github.com/magicsupery/enjoycco.git
+  ev:
+      git: https://github.com/magicsupery/libev.git
+  glog:
+      git: https://github.com/google/glog.git
+      tag: v0.4.0
+      cmake_args:
+          - -DWITH_GFLAGS=OFF 
+  #glad:
+      #local: true
