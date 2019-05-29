@@ -1,5 +1,4 @@
 #include "io_context.h"
-#include <glog/logging.h>
 
 namespace enjoyc
 {

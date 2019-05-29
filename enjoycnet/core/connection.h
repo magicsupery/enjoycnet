@@ -57,9 +57,9 @@ namespace enjoyc
 
 					// read at one time at this thread!
 					// the readcb can not invoke read
-					assert((state_ & S_READ) == 0 and io_context_->is_in_create_thread());
+					assert((state_ & S_READ) == 0 && io_context_->is_in_create_thread());
 					state_ |= S_READ;
-					uint32_t read_buffer_size = read_buffer_.size();
+					size_t read_buffer_size = read_buffer_.size();
 					ssize_t n = socket_.read(&read_buffer_[read_buffer_pos_],
 							 read_buffer_size - read_buffer_pos_);
 					
@@ -94,10 +94,10 @@ namespace enjoyc
 							return false;
 						}
 
-						read_buffer_.resize(std::min(read_buffer_size * 2, (uint32_t)READ_BUFFER_MAX_SIZE_LIMIT));
+						read_buffer_.resize(min(read_buffer_size * 2, (uint32_t)READ_BUFFER_MAX_SIZE_LIMIT));
 					}
 					//shrink
-					else if(read_buffer_size > READ_BUFFER_SHRINK_SIZE * 1.5 and 
+					else if(read_buffer_size > READ_BUFFER_SHRINK_SIZE * 1.5 && 
 							read_buffer_pos_ < READ_BUFFER_SHRINK_SIZE * 0.5)
 					{
 						read_buffer_.resize(READ_BUFFER_SHRINK_SIZE);
@@ -153,7 +153,7 @@ namespace enjoyc
 					
 					if((state_ & S_WRITE) != 0)
 					{
-						if(not write_to_buffer(data, len))
+						if(!write_to_buffer(data, len))
 						{
 							close();
 						}
@@ -167,7 +167,7 @@ namespace enjoyc
 					if(len > WRITE_ONCE_MAX_SIZE)
 					{
 						auto write_size = len - WRITE_ONCE_MAX_SIZE;
-						if(not write_to_buffer(data + WRITE_ONCE_MAX_SIZE, write_size))
+						if(!write_to_buffer(data + WRITE_ONCE_MAX_SIZE, write_size))
 						{
 							close();
 							return;
@@ -184,11 +184,20 @@ namespace enjoyc
 					}
 
 					//not write clean or write_buffer has data
-					while(n != len or write_buffer_pos_ > 0)
+					while(n != len || write_buffer_pos_ > 0)
 					{
 						uint32_t left_len = len - n;
-						uint32_t buffer_len = std::min((unsigned int)WRITE_ONCE_MAX_SIZE - left_len, write_buffer_pos_);
-						
+						uint32_t buffer_len = min((unsigned int)WRITE_ONCE_MAX_SIZE - left_len, write_buffer_pos_);
+					#ifdef _WIN32
+						char* write_data = (char*)_alloca(left_len + buffer_len);
+
+						(void)memcmp(write_data, data + n, left_len);
+						read_from_buffer(write_data + left_len, buffer_len);
+
+						len = left_len + buffer_len;
+						n = socket_.write((const char*)write_data, len);
+					#else
+
 						char write_data[left_len + buffer_len];
 
 						(void)memcmp(&write_data[0], data + n, left_len);
@@ -196,6 +205,7 @@ namespace enjoyc
 
 						len = left_len + buffer_len;
 						n = socket_.write((const char*)&write_data, len);
+					#endif
 					}
 					
 					state_ &= ~S_WRITE;
@@ -228,7 +238,7 @@ namespace enjoyc
 							return false;
 						}
 
-						write_buffer_.resize(std::min(buffer_len * 2, (unsigned long)WRITE_BUFFER_MAX_SIZE_LIMIT));
+						write_buffer_.resize(min(buffer_len * 2, (unsigned long)WRITE_BUFFER_MAX_SIZE_LIMIT));
 					}
 
 					memcpy(&write_buffer_[write_buffer_pos_], data, len);

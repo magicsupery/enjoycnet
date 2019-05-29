@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
-#include <arpa/inet.h>
+
 #include <ostream>
 #include <cstring>
+
+#include "syscall.h"
 
 namespace enjoyc
 {
@@ -16,8 +18,9 @@ namespace enjoyc
 					:ip_(ip),
 					port_(port)
 				{
+					memset(&addr_, 0, sizeof(sockaddr_in));
 					addr_.sin_family = AF_INET;
-					inet_pton(AF_INET, ip_.data(), &(addr_.sin_addr));
+					inet_pton(AF_INET, ip_.c_str(), &(addr_.sin_addr));
 					addr_.sin_port = htons(port_);
 				}
 				
@@ -30,7 +33,7 @@ namespace enjoyc
 				
 				socklen_t sockadr_size()
 				{
-					return sizeof(addr_);
+					return sizeof(struct sockaddr_in);
 				}		
 				
 				void calc_ipport_from_addr()
@@ -50,7 +53,7 @@ namespace enjoyc
 				}
 
 			public:
-				sockaddr_in addr_;
+				struct sockaddr_in addr_;
 
 				std::string ip_;
 				uint16_t port_;

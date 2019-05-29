@@ -1,5 +1,10 @@
-#include <enjoycco/coroutine.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define GOOGLE_GLOG_DLL_DECL
+#endif
+
 #include <enjoycnet/all.h>
+#include <enjoycco/coroutine.h>
 
 #include <iostream>
 #include <glog/logging.h>
@@ -13,7 +18,7 @@ void http_client()
 
 	ThreadContext::init();
 	GO([&]{
-		Endpoint ep("0.0.0.0", 9876);
+		Endpoint ep("127.0.0.1", 9876);
 		
 		Connector<Tcp> connector([](Socket<Tcp> const& ns){
 				GO([&](){
@@ -33,10 +38,15 @@ void http_client()
 
 						auto len = req.ByteSize();
 						DLOG(INFO) << "len " << len;
-						char buf[len];
+#ifdef _WIN32
+						char* buf = (char*)_alloca(len);
 						req.Serialize(buf, len);
 						con_ptr->write(buf, len);
-
+#else
+						char buf[len]:
+						req.Serialize(buf.data(), len);
+						con_ptr->write(buf.data(), len);
+#endif
 						bool ret;
 						do{
 						ret = con_ptr->read();
@@ -45,7 +55,11 @@ void http_client()
 				});
 		});
 
-		connector.connect(ep);
+		bool ret = connector.connect(ep);
+		if (!ret)
+		{
+			LOG(ERROR) << "can not connect to " << ep;
+		}
 
 	});
 
@@ -53,9 +67,14 @@ void http_client()
 }
 int main(int , char** argv)
 {
+#ifdef _WIN32
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	WSAStartup(wVersionRequested, &wsaData);
+#endif
 	::google::InitGoogleLogging(argv[0]);
 	::google::LogToStderr();
-	DLOG(INFO) << __FUNCTION__ << " start";
+	LOG(INFO) << __FUNCTION__ << " start";
 	vector<thread*> threads;
 	threads.emplace_back(new thread(http_client));
 

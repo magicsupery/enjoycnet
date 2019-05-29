@@ -1,14 +1,22 @@
 cmake_minimum_required(VERSION 3.2)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 set(projectName enjoycnet)
 
 project(${projectName})
 
+# build config
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# 
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(BUILD_SHARED_LIBS "Build shared libs" OFF)
+
+
 if (CMAKE_BUILD_TYPE)
 else()
 	set(CMAKE_BUILD_TYPE RelWithDebInfo)
-	#set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
 
@@ -44,13 +52,17 @@ else()
 	EXIT()	
 endif()
 
-# add include and lib other project
-include_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/include)
+#include
 include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/lib)
-
-# add my project .h and .cpp
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/include)
+
+#lib
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/install/lib)
+link_directories(${PROJECT_BINARY_DIR}/lib)
+link_directories(${Boost_LIBRARY_DIRS})
+
+
 
 add_subdirectory(enjoycnet)
 add_subdirectory(test)

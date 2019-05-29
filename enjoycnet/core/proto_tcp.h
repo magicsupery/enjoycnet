@@ -32,27 +32,33 @@ namespace enjoyc
 			public:
 				int listen(Endpoint & ep, uint32_t backlog)
 				{
-					if(not create())
+					if(create() < 0)
 						return -1;
 
 					host_addr_ = ep;
-					if(::bind(fd_, ep.sockaddr(), ep.sockadr_size()) < 0)
+					if (bind_syscall(fd_, ep.sockaddr(), ep.sockadr_size()) < 0)
+					{
+						LOG(ERROR) << "can not bind " << fd_;
 						return -1;
+					}
+						
 
-					if(::listen(fd_, backlog) < 0)
+					if (listen_syscall(fd_, backlog) < 0)
+					{
+						LOG(ERROR) << "can not listen" << fd_;
 						return -1;
+					}
 
 					return 0;
 				}
 				
 				int connect(Endpoint & ep)
 				{
-					if(not create())
+					if(create() < 0)
 						return -1;
 					
 					remote_addr_ = ep;
-					auto len = remote_addr_.sockadr_size();
-					if(connect_hook(fd_, remote_addr_.sockaddr(), len) < 0)
+					if(connect_hook(fd_, ep.sockaddr(), ep.sockadr_size()) < 0)
 						return -1;
 					
 					return 0;
@@ -70,13 +76,14 @@ namespace enjoyc
 						t.host_addr_ = host_addr_;
 						t.remote_addr_.calc_ipport_from_addr();
 						t.active(res_fd);
+						make_socket_nonblocking(res_fd);
 						
 					}
 
 					return res_fd;
 				}
 				
-				uint32_t read(const char* data, uint32_t len)
+				ssize_t read(const char* data, uint32_t len)
 				{
 					return read_hook(fd_, data, len);
 				}
@@ -98,7 +105,7 @@ namespace enjoyc
 						 * 
 						*/
 						//::shutdown(fd_, SHUT_RDWR);
-						::close(fd_);
+						close_syscall(fd_);
 						state_ = TcpSocketState::CLOSED;
 					}
 				}
@@ -117,21 +124,22 @@ namespace enjoyc
 			private:
 				int create()
 				{
-					int fd = get_socket(AF_INET, SOCK_STREAM, 0);
-
+					int fd = socket_syscall(AF_INET, SOCK_STREAM, 0);
 					if(fd <= 0)
 						return -1;
 					
 					// non-blocking
 					if(make_socket_nonblocking(fd) < 0)
 					{
-						close_socket(fd);
+						LOG(ERROR) << "nonblocking failed " << fd;
+						close_syscall(fd);
 						return -1;
 					}
 
 					if(make_socket_resue(fd) < 0)
 					{
-						close_socket(fd);
+						LOG(ERROR) << "reuse failed " << fd;
+						close_syscall(fd);
 						return -1;
 					}
 

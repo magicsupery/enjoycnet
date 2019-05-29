@@ -1,5 +1,10 @@
 #pragma once
 
+//defined for windows, otherwise glog will failed
+#ifndef GLOG_NO_ABBREVIATED_SEVERITIES
+	#define GLOG_NO_ABBREVIATED_SEVERITIES
+#endif
+
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -53,7 +58,7 @@ namespace enjoyc
 				}
 
 			public:
-				inline void run()
+				void run()
 				{
 					ev_loop_->run();
 				}

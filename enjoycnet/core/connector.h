@@ -24,8 +24,14 @@ namespace enjoyc
 				bool connect(Endpoint & ep)
 				{
 					Socket<Proto> socket;
-					socket.connect(ep);
+					auto ret = socket.connect(ep);
+					if (ret < 0)
+					{
+						return false;
+					}
 					callback_(socket);
+
+					return true;
 				}
 
 			private:

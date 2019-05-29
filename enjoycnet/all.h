@@ -1,3 +1,4 @@
+#include "core/syscall.h"
 #include "core/io_context.h"
 #include "core/co_event.h"
 #include "core/socket.h"

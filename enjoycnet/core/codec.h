@@ -14,7 +14,7 @@ namespace enjoyc
 			public:
 				using ReadCallback = std::function<void(Res&)>;
 
-				virtual uint32_t parse_message(const char* data, uint32_t len) = 0;
+				virtual size_t parse_message(const char* data, uint32_t len) = 0;
 
 		};	
 
@@ -30,7 +30,7 @@ namespace enjoyc
 
 				}
 
-				virtual uint32_t parse_message(const char* data, uint32_t len) override
+				virtual size_t parse_message(const char* data, uint32_t len) override
 				{
 
 					auto handled = request_.PartailParse(data, len);
@@ -59,7 +59,7 @@ namespace enjoyc
 					read_callback_(read_callback)
 				{}
 
-				uint32_t parse_message(const char* data, uint32_t len)
+				size_t parse_message(const char* data, uint32_t len)
 				{
 
 					auto handled = response_.PartailParse(data, len);
