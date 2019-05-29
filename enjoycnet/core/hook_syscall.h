@@ -46,7 +46,7 @@ namespace enjoyc
 
 		}
 
-		ssize_t read_hook(int fd, const char* data, uint32_t len)
+		ssize_t read_hook(int fd, const char* data, size_t len)
 		{
 
 			auto co_event = ThreadContext::this_io_context()->get_coevent(fd);
@@ -63,7 +63,7 @@ namespace enjoyc
 			return read_size;
 		}
 
-		ssize_t write_hook(int fd, const char* data, uint32_t len)
+		ssize_t write_hook(int fd, const char* data, size_t len)
 		{
 			ssize_t write_size = 0;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include "socket.h"
 #include "io_context.h"
 #include <assert.h>
@@ -71,7 +72,7 @@ namespace enjoyc
 						return false;
 					}
 
-					uint32_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_pos_ + n);
+					size_t consume = codec_.parse_message(read_buffer_.data(), read_buffer_pos_ + n);
 					read_buffer_pos_ = read_buffer_pos_ + n - consume;
 
 					DLOG(INFO) << __FUNCTION__ << " " << this <<" 1";
@@ -94,7 +95,7 @@ namespace enjoyc
 							return false;
 						}
 
-						read_buffer_.resize(min(read_buffer_size * 2, (uint32_t)READ_BUFFER_MAX_SIZE_LIMIT));
+						read_buffer_.resize(std::min(read_buffer_size * 2, (size_t)READ_BUFFER_MAX_SIZE_LIMIT));
 					}
 					//shrink
 					else if(read_buffer_size > READ_BUFFER_SHRINK_SIZE * 1.5 && 
@@ -107,7 +108,7 @@ namespace enjoyc
 					return true;
 				}
 
-				void write(const char*data, uint32_t len)
+				void write(const char*data, size_t len)
 				{
 					if(io_context_->is_in_create_thread())
 					{
@@ -146,7 +147,7 @@ namespace enjoyc
 				}
 
 			protected:
-				inline void write_in_thread(const char*data, uint32_t len)
+				inline void write_in_thread(const char*data, size_t len)
 				{
 					if((state_ & S_CLOSE) != 0)
 						return;
@@ -186,8 +187,8 @@ namespace enjoyc
 					//not write clean or write_buffer has data
 					while(n != len || write_buffer_pos_ > 0)
 					{
-						uint32_t left_len = len - n;
-						uint32_t buffer_len = min((unsigned int)WRITE_ONCE_MAX_SIZE - left_len, write_buffer_pos_);
+						size_t left_len = len - n;
+						size_t buffer_len = std::min((size_t)WRITE_ONCE_MAX_SIZE - left_len, write_buffer_pos_);
 					#ifdef _WIN32
 						char* write_data = (char*)_alloca(left_len + buffer_len);
 
@@ -221,7 +222,7 @@ namespace enjoyc
 					socket_.close();
 				}
 
-				inline bool write_to_buffer(const char* data, uint32_t len)
+				inline bool write_to_buffer(const char* data, size_t len)
 				{
 
 					//write to the buffer
@@ -238,7 +239,7 @@ namespace enjoyc
 							return false;
 						}
 
-						write_buffer_.resize(min(buffer_len * 2, (unsigned long)WRITE_BUFFER_MAX_SIZE_LIMIT));
+						write_buffer_.resize(std::min(buffer_len * 2, (size_t)WRITE_BUFFER_MAX_SIZE_LIMIT));
 					}
 
 					memcpy(&write_buffer_[write_buffer_pos_], data, len);
@@ -247,7 +248,7 @@ namespace enjoyc
 					return true;
 				}
 
-				inline void read_from_buffer(char* data, uint32_t len)
+				inline void read_from_buffer(char* data, size_t len)
 				{
 					memcpy(data, write_buffer_.data(), len);
 					
@@ -261,9 +262,9 @@ namespace enjoyc
 				Codec codec_;
 
 				std::vector<char> read_buffer_;
-				uint32_t read_buffer_pos_;
+				size_t read_buffer_pos_;
 				std::vector<char> write_buffer_;
-				uint32_t write_buffer_pos_;
+				size_t write_buffer_pos_;
 
 				int state_;
 

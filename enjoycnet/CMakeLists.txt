@@ -9,6 +9,7 @@ macro(add_src_dir name)
 		endif()
 
 endmacro()
+add_src_dir(.)
 add_src_dir(core)
 
 set(TARGET ${projectName})

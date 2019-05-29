@@ -66,7 +66,7 @@ namespace enjoyc
 			return  connect(FD_HANDLE(fd), addr, addrlen);
 		}
 
-		inline ssize_t send_syscall(int fd, const char* data, uint32_t len, ssize_t& write_size)
+		inline ssize_t send_syscall(int fd, const char* data, size_t len, ssize_t& write_size)
 		{
 #ifdef __linux__
 			write_size = ::send(fd, (void*)data, len, MSG_NOSIGNAL);
@@ -75,7 +75,7 @@ namespace enjoyc
 #endif
 			return write_size;
 		}
-		inline ssize_t recv_syscall(int fd, const char* data, uint32_t len, ssize_t& read_size)
+		inline ssize_t recv_syscall(int fd, const char* data, size_t len, ssize_t& read_size)
 		{
 #ifdef __linux__
 			read_size = ::recv(fd, (void*)data, len, MSG_NOSIGNAL);

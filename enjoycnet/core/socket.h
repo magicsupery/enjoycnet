@@ -32,12 +32,12 @@ namespace enjoyc
 					return proto_.connect(ep);
 				}
 
-				ssize_t read(const char* data, uint32_t len)
+				ssize_t read(const char* data, size_t len)
 				{
 					return proto_.read(data, len);
 				}
 
-				ssize_t write(const char* data, uint32_t len)
+				ssize_t write(const char* data, size_t len)
 				{
 					return proto_.write(data, len);
 				}

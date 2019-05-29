@@ -83,12 +83,12 @@ namespace enjoyc
 					return res_fd;
 				}
 				
-				ssize_t read(const char* data, uint32_t len)
+				ssize_t read(const char* data, size_t len)
 				{
 					return read_hook(fd_, data, len);
 				}
 
-				ssize_t write(const char* data, uint32_t len)
+				ssize_t write(const char* data, size_t len)
 				{
 					return write_hook(fd_, data, len);
 				}
